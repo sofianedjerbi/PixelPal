@@ -1,11 +1,15 @@
-mod ai;
-mod map;
-
-use bevy::{prelude::*, log::{LogPlugin, Level}};
+use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
+use components::mapping::ChunkManager;
+use constants::mapping::RENDER_CHUNK_SIZE;
 use dotenv::dotenv;
 
-use std::env;
+mod util;
+mod systems;
+mod components;
+mod bundles;
+mod generation;
+mod constants;
 
 
 #[tokio::main]
@@ -21,7 +25,27 @@ async fn main(){
 
     // run app
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(
+            DefaultPlugins
+            .set(ImagePlugin::default_nearest())
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: String::from("TestGame"),
+                    ..Default::default()
+                }),
+                ..default()
+            }),
+        )
+        .insert_resource(TilemapRenderSettings {
+            render_chunk_size: RENDER_CHUNK_SIZE,
+            ..Default::default()
+        })
         .add_plugins(TilemapPlugin)
+        .insert_resource(ChunkManager::default())
+        .add_systems(Startup, systems::setup::setup)
+        .add_systems(Update, systems::movement::movement)
+        //.add_systems(Update, systems::animation::animate_sprite)
+        .add_systems(Update, systems::chunk::handle_chunk_spawning)
+        .add_systems(Update, systems::chunk::handle_chunk_despawning)
         .run();
 }

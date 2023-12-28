@@ -1,5 +1,5 @@
 [package]
-name = "elterago"
+name = "test"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 bevy = "0.12.1"
 bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap" }
+benimator = { git = "https://github.com/jcornaz/benimator" }
 chatgpt_rs = "1.2.3"
 dotenv = "0.15.0"
-tokio = { version = "1.35.0", features = ["full"] }
+tokio = { version = "1.35.1", features = ["full"] }
+noise = "0.8"

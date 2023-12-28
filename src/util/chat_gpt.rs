@@ -1,11 +1,12 @@
 use chatgpt::prelude::*;
 use bevy::log::*;
+
 use super::messages;
 
 
 pub fn new_client(key: &str) -> Result<ChatGPT> {
     let config = ModelConfigurationBuilder::default()
-        .engine(ChatGPTEngine::Gpt35Turbo)
+        .engine(ChatGPTEngine::Custom("gpt-4-1106-preview"))
         .build()
         .unwrap(); // We're sure this won't produce any error.
 
