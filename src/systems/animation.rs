@@ -1,18 +1,25 @@
 use bevy::prelude::*;
-use crate::components::animation::{SpriteAnimation, SpriteAnimationState};
+use crate::components::animation::*;
 
 
 pub fn animate_sprite(
     time: Res<Time>,
     mut query: Query<(
-        &mut SpriteAnimationState,
+        &mut AnimationState,
         &mut TextureAtlasSprite,
-        &SpriteAnimation
+        &AnimationAction,
+        &AnimationPack
     )>,
 ) {
-    for (mut animation_state, mut sprite, animation) in query.iter_mut() {
+    for (
+        mut animation_state,
+        mut sprite,
+        animation_action,
+        animation_pack
+    ) in query.iter_mut() {
+        let sprite_animation = animation_pack.get_animation(animation_action);
         animation_state.update(
-            animation,
+            &sprite_animation.animation,
             time.delta()
         );
         sprite.index = animation_state.frame_index();

@@ -3,45 +3,43 @@ use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy::render::camera::Camera;
 
+use crate::components::characters::Busy;
+use crate::components::animation::*;
+
+//TODO: Filter player only in this function, With<PlayerBundle>
 pub fn movement(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Transform, With<Camera>>,
+    mut query: Query<(&mut Busy, &mut AnimationAction)>
 ) {
-    for mut transform in query.iter_mut() {
-        let mut direction = Vec3::ZERO;
+    for (
+        mut busy,
+        mut current_animation
+    ) in query.iter_mut() {
+        //if **busy { return }
 
         if keyboard_input.pressed(KeyCode::Q) {
-            direction.x -= 1.0;  // Move left
+            current_animation.action_type = ActionType::Walking;
+            current_animation.direction = AnimationDirection::Left;
+            **busy = true;
         }
-
-        if keyboard_input.pressed(KeyCode::D) {
-            direction.x += 1.0;  // Move right
+        else if keyboard_input.pressed(KeyCode::D) {
+            current_animation.action_type = ActionType::Walking;
+            current_animation.direction = AnimationDirection::Right;
+            **busy = true;
         }
-
-        if keyboard_input.pressed(KeyCode::Z) {
-            direction.y += 1.0;  // Move up
+        else if keyboard_input.pressed(KeyCode::Z) {
+            current_animation.action_type = ActionType::Walking;
+            current_animation.direction = AnimationDirection::Up;
+            **busy = true;
         }
-
-        if keyboard_input.pressed(KeyCode::S) {
-            direction.y -= 1.0;  // Move down
+        else if keyboard_input.pressed(KeyCode::S) {
+            current_animation.action_type = ActionType::Walking;
+            current_animation.direction = AnimationDirection::Down;
+            **busy = true;
         }
-
-        // Normalize direction to have consistent movement speed in all directions
-        if direction.length_squared() > 0.0 {
-            direction = direction.normalize();
+        else {
+            current_animation.action_type = ActionType::Standing;
         }
-
-        let movement_speed = 32.0; // Pixels per second
-        let zoom_factor = 1. / transform.scale.x; // Assuming uniform scaling for x and y
-
-        // Calculate the actual movement distance considering time and zoom factor
-        let movement_distance = time.delta_seconds() * movement_speed * zoom_factor;
-
-        // Update the translation based on direction and calculated movement distance
-        transform.translation += direction * movement_distance;
-
-        // Ensure the camera doesn't move in the Z direction
-        transform.translation.z = 0.0;
     }
 }

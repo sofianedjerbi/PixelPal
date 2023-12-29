@@ -44,7 +44,7 @@ async fn main(){
         .insert_resource(ChunkManager::default())
         .add_systems(Startup, systems::setup::setup)
         .add_systems(Update, systems::movement::movement)
-        //.add_systems(Update, systems::animation::animate_sprite)
+        .add_systems(Update, systems::animation::animate_sprite)
         .add_systems(Update, systems::chunk::handle_chunk_spawning)
         .add_systems(Update, systems::chunk::handle_chunk_despawning)
         .run();

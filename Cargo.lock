@@ -3624,6 +3624,7 @@ dependencies = [
  "chatgpt_rs",
  "dotenv",
  "noise",
+ "once_cell",
  "tokio",
 ]
 

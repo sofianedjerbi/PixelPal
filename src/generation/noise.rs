@@ -1,4 +1,3 @@
-use bevy::log;
 use noise::{NoiseFn, Perlin, Seedable};
 use crate::constants::generation::*;
 

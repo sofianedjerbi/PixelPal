@@ -35,11 +35,11 @@ pub fn spawn_chunk(
         }
     }
 
-    let transform = Transform::from_translation(Vec3::new(
+    let transform = Transform::from_xyz(
         base_x as f32 * TILE_SIZE.x,
         base_y as f32 * TILE_SIZE.y,
         0.0,
-    ));
+    );
 
     let texture_handle: Handle<Image> = asset_server.load("tileset/environment/debug.png");
 

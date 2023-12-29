@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use crate::bundles::player::PlayerBundle;
-use crate::components::animation::{SpriteAnimation, SpriteAnimationState};
 use crate::constants::display::ZOOM;
 
 
@@ -18,9 +17,7 @@ pub fn setup(
     });
 
     // Spawn player
-    /*commands.spawn((
+    commands.spawn((
         PlayerBundle::new(asset_server, textures),
-        SpriteAnimationState::default(),
-        SpriteAnimation::new([2,3], 3.)
-    ));*/
+    ));
 }

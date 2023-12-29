@@ -1,28 +1,21 @@
 use bevy::prelude::*;
+use crate::components::animation::*;
 use crate::components::characters::*;
-use crate::constants::mapping::TILE_SIZE;
+use crate::constants::sprites::*;
 
-
-// SPRITE CONFIG
-const SPRITE: &str = "characters/player.png";
-const SIZE: Vec2 = Vec2::new(16., 16.);
-const OFFSET: Option<Vec2> = Some(Vec2::new(16., 16.));
-const PADDING: Option<Vec2> = Some(Vec2::new(32., 32.));
-const COLUMNS: usize = 4;
-const ROWS: usize = 4;
 
 // BUNDLE DEFAULT
 const HEALTH: u8 = 100;
-
-// OTHER
-const LAYER: f32 = 4.;
 
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
     pub busy: Busy,
     pub health: Health,
-    pub sprite: SpriteSheetBundle
+    pub sprite: SpriteSheetBundle,
+    pub animation_pack: AnimationPack,
+    pub current_animation: AnimationAction,
+    pub animation_state: AnimationState,
 }
 
 impl PlayerBundle {
@@ -34,22 +27,22 @@ impl PlayerBundle {
             busy: Busy(false),
             health: Health(HEALTH),
             sprite: SpriteSheetBundle {
-                transform: Transform { 
-                    translation: Vec3::new(0., 0., LAYER),
-                    ..Default::default()
-                },
+                transform: Transform::from_xyz(0., 4., PLAYER_SPRITE_LAYER),
                 texture_atlas: textures.add(
                         TextureAtlas::from_grid(
-                        asset_server.load(SPRITE),
-                        TILE_SIZE,
-                        COLUMNS,
-                        ROWS,
-                        PADDING,
-                        OFFSET
+                        asset_server.load(PLAYER_SPRITE),
+                        TILE_SIZE.into(),
+                        PLAYER_SPRITE_COLUMNS,
+                        PLAYER_SPRITE_ROWS,
+                        PLAYER_SPRITE_PADDING,
+                        PLAYER_SPRITE_OFFSET
                     )
                 ),
-                ..Default::default() // fill in the rest of the fields with default values
+                ..Default::default()
             },
+            animation_pack: PLAYER_ANIMATIONS.clone(),
+            current_animation: PLAYER_ANIMATION_DEFAULT,
+            animation_state: AnimationState::default()
         }
     }
 }
