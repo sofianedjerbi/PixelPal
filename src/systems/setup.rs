@@ -1,23 +1,34 @@
 use bevy::prelude::*;
+use bevy_pixel_camera::*;
 use crate::bundles::player::PlayerBundle;
-use crate::constants::display::ZOOM;
-
-
-const _ZOOM_VALUE: f32 = 1. / ZOOM;
+use crate::components::characters::IsUser;
+use crate::constants::characters::*;
+use crate::constants::display::*;
 
 pub fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    textures: ResMut<Assets<TextureAtlas>>
+    mut textures: ResMut<Assets<TextureAtlas>>
  ) {
     // Spawn the camera
-    commands.spawn(Camera2dBundle {
-        transform: Transform::from_scale(Vec3::new(_ZOOM_VALUE, _ZOOM_VALUE, 1.)), // Directly set scale
-        ..Default::default()
-    });
-
-    // Spawn player
     commands.spawn((
-        PlayerBundle::new(asset_server, textures),
+        Camera2dBundle {
+            ..Default::default()
+        },
+        PixelZoom::FitSize {
+            width: WIDTH,
+            height: HEIGHT,
+        },
+        PixelViewport,
     ));
+
+    // Spawn Player
+    commands.spawn(
+        PlayerBundle::new(USER_SPAWN, &asset_server, &mut textures)
+    ).insert(IsUser);
+
+    // Spawn Mittens (GPT)
+    commands.spawn(
+        PlayerBundle::new(MITTENS_SPAWN, &asset_server, &mut textures)
+    );
 }

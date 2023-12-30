@@ -781,6 +781,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_pixel_camera"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6dca027296f12f305de6f121fe27115fb15a6525cf3e31868050e3caf5b75eaa"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_ptr"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3621,6 +3630,7 @@ dependencies = [
  "benimator",
  "bevy",
  "bevy_ecs_tilemap",
+ "bevy_pixel_camera",
  "chatgpt_rs",
  "dotenv",
  "noise",

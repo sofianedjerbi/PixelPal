@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use crate::constants::{mapping::*, sprites::TILE_SIZE};
+use crate::constants::mapping::*;
 
 
 #[derive(Bundle)]

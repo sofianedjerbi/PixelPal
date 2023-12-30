@@ -1,45 +1,52 @@
-use bevy::input::Input;
+use bevy::log;
 use bevy::math::Vec3;
 use bevy::prelude::*;
-use bevy::render::camera::Camera;
 
-use crate::components::characters::Busy;
-use crate::components::animation::*;
+use crate::components::action::*;
+use crate::components::characters::*;
+use crate::constants::characters::ACTION_TRANSFORMATION;
+use crate::constants::tps::MOVEMENT_TPS;
 
-//TODO: Filter player only in this function, With<PlayerBundle>
-pub fn movement(
-    time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Busy, &mut AnimationAction)>
+
+pub fn move_characters(
+    mut query: Query<(
+        &mut Transform,
+        &mut Busy, 
+        &mut Action
+    ), With<IsUser>>,
 ) {
     for (
+        mut transform,
         mut busy,
-        mut current_animation
+        mut action
     ) in query.iter_mut() {
-        //if **busy { return }
+        log::error!("{:?}", transform.translation);
+        if !**busy { continue; }
 
-        if keyboard_input.pressed(KeyCode::Q) {
-            current_animation.action_type = ActionType::Walking;
-            current_animation.direction = AnimationDirection::Left;
-            **busy = true;
+        action.timer.tick(MOVEMENT_TPS);
+
+        if action.timer.finished() {
+            **busy = false;
+            // Fix f32 residus
+            transform.translation = transform.translation.round();
+            return
         }
-        else if keyboard_input.pressed(KeyCode::D) {
-            current_animation.action_type = ActionType::Walking;
-            current_animation.direction = AnimationDirection::Right;
-            **busy = true;
-        }
-        else if keyboard_input.pressed(KeyCode::Z) {
-            current_animation.action_type = ActionType::Walking;
-            current_animation.direction = AnimationDirection::Up;
-            **busy = true;
-        }
-        else if keyboard_input.pressed(KeyCode::S) {
-            current_animation.action_type = ActionType::Walking;
-            current_animation.direction = AnimationDirection::Down;
-            **busy = true;
-        }
-        else {
-            current_animation.action_type = ActionType::Standing;
-        }
+
+        let action_transform = ACTION_TRANSFORMATION(&action);
+        let movement = action_transform 
+            * Vec3::splat(MOVEMENT_TPS.as_secs_f32() 
+            / action.timer.duration().as_secs_f32());
+
+        transform.translation += movement;
     }
+}
+
+pub fn camera_follow_player(
+    player_query: Query<&Transform, With<IsUser>>,
+    mut camera_query: Query<&mut Transform, (With<Camera>, Without<IsUser>)>,
+) {
+    
+    let player_transform = player_query.single();
+    let mut camera_transform = camera_query.single_mut();
+    camera_transform.translation = player_transform.translation;
 }

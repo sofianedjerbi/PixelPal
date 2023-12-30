@@ -1,12 +1,9 @@
 use bevy::prelude::*;
+use crate::components::action::*;
 use crate::components::animation::*;
 use crate::components::characters::*;
+use crate::constants::characters::*;
 use crate::constants::sprites::*;
-
-
-// BUNDLE DEFAULT
-const HEALTH: u8 = 100;
-
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
@@ -14,24 +11,28 @@ pub struct PlayerBundle {
     pub health: Health,
     pub sprite: SpriteSheetBundle,
     pub animation_pack: AnimationPack,
-    pub current_animation: AnimationAction,
+    pub current_action: Action,
     pub animation_state: AnimationState,
 }
 
 impl PlayerBundle {
     pub fn new(
-        asset_server: Res<AssetServer>,
-        mut textures: ResMut<Assets<TextureAtlas>>
+        position: Vec2,
+        asset_server: &Res<AssetServer>,
+        textures: &mut ResMut<Assets<TextureAtlas>>
     ) -> Self {
         PlayerBundle {
             busy: Busy(false),
-            health: Health(HEALTH),
+            health: PLAYER_HEALTH,
             sprite: SpriteSheetBundle {
-                transform: Transform::from_xyz(0., 4., PLAYER_SPRITE_LAYER),
+                transform: Transform::from_xyz(
+                    position.x,
+                    position.y + PLAYER_SPRITE_SIZE.x / 2.,
+                    PLAYER_SPRITE_LAYER),
                 texture_atlas: textures.add(
                         TextureAtlas::from_grid(
                         asset_server.load(PLAYER_SPRITE),
-                        TILE_SIZE.into(),
+                        PLAYER_SPRITE_SIZE.into(),
                         PLAYER_SPRITE_COLUMNS,
                         PLAYER_SPRITE_ROWS,
                         PLAYER_SPRITE_PADDING,
@@ -41,8 +42,8 @@ impl PlayerBundle {
                 ..Default::default()
             },
             animation_pack: PLAYER_ANIMATIONS.clone(),
-            current_animation: PLAYER_ANIMATION_DEFAULT,
-            animation_state: AnimationState::default()
+            current_action: PLAYER_ANIMATION_DEFAULT.clone(),
+            animation_state: AnimationState::default(),
         }
     }
 }

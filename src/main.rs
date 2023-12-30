@@ -1,7 +1,9 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, time::common_conditions::on_timer};
 use bevy_ecs_tilemap::prelude::*;
+use bevy_pixel_camera::PixelCameraPlugin;
 use components::mapping::ChunkManager;
 use constants::mapping::RENDER_CHUNK_SIZE;
+use constants::tps::MOVEMENT_TPS;
 use dotenv::dotenv;
 
 mod util;
@@ -36,6 +38,7 @@ async fn main(){
                 ..default()
             }),
         )
+        .add_plugins(PixelCameraPlugin)
         .insert_resource(TilemapRenderSettings {
             render_chunk_size: RENDER_CHUNK_SIZE,
             ..Default::default()
@@ -43,8 +46,14 @@ async fn main(){
         .add_plugins(TilemapPlugin)
         .insert_resource(ChunkManager::default())
         .add_systems(Startup, systems::setup::setup)
-        .add_systems(Update, systems::movement::movement)
+        .add_systems(Update, systems::input::handle_input)
         .add_systems(Update, systems::animation::animate_sprite)
+        .add_systems(
+            Update,
+            systems::movement::move_characters
+                .run_if(on_timer(MOVEMENT_TPS))
+        )
+        .add_systems(Update, systems::movement::camera_follow_player)
         .add_systems(Update, systems::chunk::handle_chunk_spawning)
         .add_systems(Update, systems::chunk::handle_chunk_despawning)
         .run();

@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use crate::constants::mapping::*;
-use crate::constants::sprites::TILE_SIZE;
 use crate::components::mapping::ChunkManager;
 use crate::generation::noise::TiledNoise;
 
