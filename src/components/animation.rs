@@ -1,7 +1,7 @@
 use benimator::*;
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
-use super::action::*;
+use super::action::Action;
 
 
 /// Holds the current state of an animation.
@@ -22,34 +22,15 @@ impl SpriteAnimation {
     }
 }
 
-#[derive(Component, Clone)]
-pub struct AnimationMovement {
-    pub up: SpriteAnimation,
-    pub down: SpriteAnimation,
-    pub left: SpriteAnimation,
-    pub right: SpriteAnimation
-}
 
-#[derive(Component, Clone)]
-pub struct AnimationPack {
-    pub standing: AnimationMovement,
-    pub walking: AnimationMovement,
-    // Other animations...
-}
+#[derive(Component, Clone, Deref)]
+pub struct AnimationFramesMap(
+    pub HashMap<Action, SpriteAnimation>
+);
 
-impl AnimationPack {
-    pub fn get_animation(&self, action: &Action) -> &SpriteAnimation {
-        let movement = match action.action_type {
-            ActionType::Standing => &self.standing,
-            ActionType::Walking => &self.walking,
-            // ... handle other actions if necessary
-        };
-
-        match action.direction {
-            ActionDirection::Up => &movement.up,
-            ActionDirection::Down => &movement.down,
-            ActionDirection::Left => &movement.left,
-            ActionDirection::Right => &movement.right,
-        }
+impl AnimationFramesMap {
+    pub fn lookup(&self, action: &Action) -> &SpriteAnimation {
+        // We're unwrapping hardcoded values.
+        self.0.get(action).unwrap()
     }
 }

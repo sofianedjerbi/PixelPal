@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+phf = { version = "0.11", features = ["macros"] }
+strum = "0.25.0"
+strum_macros = "0.25.3"
 bevy = "0.12.1"
 bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap" }
 benimator = { git = "https://github.com/jcornaz/benimator" }

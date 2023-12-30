@@ -15,10 +15,7 @@ pub fn setup(
         Camera2dBundle {
             ..Default::default()
         },
-        PixelZoom::FitSize {
-            width: WIDTH,
-            height: HEIGHT,
-        },
+        PixelZoom::Fixed(ZOOM),
         PixelViewport,
     ));
 

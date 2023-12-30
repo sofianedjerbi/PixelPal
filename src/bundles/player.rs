@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use crate::components::action::*;
 use crate::components::animation::*;
 use crate::components::characters::*;
+use crate::constants::action::PLAYER_ACTION_DEFAULT;
+use crate::constants::action::PLAYER_ACTION_DURATION_MAP;
 use crate::constants::characters::*;
 use crate::constants::sprites::*;
 
@@ -10,9 +12,11 @@ pub struct PlayerBundle {
     pub busy: Busy,
     pub health: Health,
     pub sprite: SpriteSheetBundle,
-    pub animation_pack: AnimationPack,
     pub current_action: Action,
     pub animation_state: AnimationState,
+    pub action_timer: ActionTimer,
+    pub animation_frames: AnimationFramesMap,
+    pub action_duration: ActionDurationPHF
 }
 
 impl PlayerBundle {
@@ -41,9 +45,12 @@ impl PlayerBundle {
                 ),
                 ..Default::default()
             },
-            animation_pack: PLAYER_ANIMATIONS.clone(),
-            current_action: PLAYER_ANIMATION_DEFAULT.clone(),
+            current_action: PLAYER_ACTION_DEFAULT,
             animation_state: AnimationState::default(),
+            action_timer: PLAYER_ACTION_DURATION_MAP
+                .generate_timer(&PLAYER_ACTION_DEFAULT),
+            animation_frames: PLAYER_SPRITE_INDICES_MAP.clone(),
+            action_duration: PLAYER_ACTION_DURATION_MAP
         }
     }
 }

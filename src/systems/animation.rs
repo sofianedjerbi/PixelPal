@@ -10,20 +10,20 @@ pub fn animate_sprite(
         &mut AnimationState,
         &mut TextureAtlasSprite,
         &Action,
-        &AnimationPack
+        &AnimationFramesMap
     )>,
 ) {
     for (
-        mut animation_state,
+        mut state,
         mut sprite,
-        animation_action,
-        animation_pack
+        action,
+        frames
     ) in query.iter_mut() {
-        let sprite_animation = animation_pack.get_animation(animation_action);
-        animation_state.update(
-            &**sprite_animation,
+        let animation = frames.lookup(action);
+        state.update(
+            &animation,
             time.delta()
         );
-        sprite.index = animation_state.frame_index();
+        sprite.index = state.frame_index();
     }
 }

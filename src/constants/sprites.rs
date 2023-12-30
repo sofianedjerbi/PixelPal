@@ -1,6 +1,7 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use once_cell::sync::Lazy;
 
+use crate::components::action::*;
 use crate::components::animation::*;
 
 
@@ -12,19 +13,47 @@ pub const PLAYER_SPRITE_PADDING: Option<Vec2> = None;
 pub const PLAYER_SPRITE_COLUMNS: usize = 8;
 pub const PLAYER_SPRITE_ROWS: usize = 24;
 pub const PLAYER_SPRITE_LAYER: f32 = 4.;
-pub static PLAYER_ANIMATIONS: Lazy<AnimationPack> = Lazy::new(|| { AnimationPack {
-        standing: AnimationMovement {
-            down: SpriteAnimation::new(0..8, 5.),
-            up: SpriteAnimation::new(8..16, 5.),
-            left: SpriteAnimation::new(16..24, 5.),
-            right: SpriteAnimation::new(24..32, 5.),
-        },
-        walking: AnimationMovement {
-            down: SpriteAnimation::new(32..40, 12.),
-            up: SpriteAnimation::new(40..48, 12.),
-            right: SpriteAnimation::new(48..56, 12.),
-            left: SpriteAnimation::new(56..64, 12.),
-        },
-        // ... initialize other animations if any ...
-    }
+
+pub const PLAYER_STANDING_FPS: f64 = 5.;
+pub const PLAYER_WALKING_FPS: f64 = 16.;
+
+pub static PLAYER_SPRITE_INDICES_MAP: Lazy<AnimationFramesMap> = Lazy::new(|| {
+    AnimationFramesMap(
+        HashMap::from([
+            // Standing Actions
+            (
+                Action::new(ActionKind::Standing, ActionDirection::Down),
+                SpriteAnimation::new(0..8, PLAYER_STANDING_FPS)
+            ),
+            (
+                Action::new(ActionKind::Standing, ActionDirection::Up),
+                SpriteAnimation::new(8..16, PLAYER_STANDING_FPS)
+            ),
+            (
+                Action::new(ActionKind::Standing, ActionDirection::Left),
+                SpriteAnimation::new(16..24, PLAYER_STANDING_FPS)
+            ),
+            (
+                Action::new(ActionKind::Standing, ActionDirection::Right),
+                SpriteAnimation::new(24..32, PLAYER_STANDING_FPS)
+            ),
+            // Walking Actions
+            (
+                Action::new(ActionKind::Walking, ActionDirection::Down),
+                SpriteAnimation::new(32..40, PLAYER_WALKING_FPS)
+            ),
+            (
+                Action::new(ActionKind::Walking, ActionDirection::Up),
+                SpriteAnimation::new(40..48, PLAYER_WALKING_FPS)
+            ),
+            (
+                Action::new(ActionKind::Walking, ActionDirection::Right),
+                SpriteAnimation::new(48..56, PLAYER_WALKING_FPS)
+            ),
+            (
+                Action::new(ActionKind::Walking, ActionDirection::Left),
+                SpriteAnimation::new(56..64, PLAYER_WALKING_FPS)
+            ),
+        ])
+    )
 });

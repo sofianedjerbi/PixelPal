@@ -3,7 +3,7 @@ use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
 use components::mapping::ChunkManager;
 use constants::mapping::RENDER_CHUNK_SIZE;
-use constants::tps::MOVEMENT_TPS;
+use constants::action::ACTION_TICK_FREQUENCY;
 use dotenv::dotenv;
 
 mod util;
@@ -51,7 +51,7 @@ async fn main(){
         .add_systems(
             Update,
             systems::movement::move_characters
-                .run_if(on_timer(MOVEMENT_TPS))
+                .run_if(on_timer(ACTION_TICK_FREQUENCY))
         )
         .add_systems(Update, systems::movement::camera_follow_player)
         .add_systems(Update, systems::chunk::handle_chunk_spawning)

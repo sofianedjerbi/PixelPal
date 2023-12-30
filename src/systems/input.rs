@@ -3,42 +3,49 @@ use bevy::prelude::*;
 
 use crate::components::characters::*;
 use crate::components::action::*;
-use crate::constants::characters::PLAYER_ACTION_TIMER;
+use crate::constants::action::PLAYER_ACTION_DEFAULT;
 
 
 pub fn handle_input(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Busy, &mut Action), With<IsUser>>
+    mut query: Query<(
+        &mut Busy,
+        &mut Action,
+        &mut ActionTimer,
+        &ActionDurationPHF
+    ), With<IsUser>>
 ) {
     for (
         mut busy,
         mut action,
+        mut timer,
+        duration
     ) in query.iter_mut() {
         if **busy { return }
 
         let new_state = 
         match keyboard_input.get_pressed().next() {
             Some(KeyCode::Q) =>
-                Some((ActionType::Walking, ActionDirection::Left)),
+                Some((ActionKind::Walking, ActionDirection::Left)),
             Some(KeyCode::D) =>
-                Some((ActionType::Walking, ActionDirection::Right)),
+                Some((ActionKind::Walking, ActionDirection::Right)),
             Some(KeyCode::Z) =>
-                Some((ActionType::Walking, ActionDirection::Up)),
+                Some((ActionKind::Walking, ActionDirection::Up)),
             Some(KeyCode::S) =>
-                Some((ActionType::Walking, ActionDirection::Down)),
+                Some((ActionKind::Walking, ActionDirection::Down)),
             _ => None,
         };
 
         if let Some((
-            action_type,
+            kind,
             direction
         )) = new_state {
-            action.action_type = action_type;
+            action.kind = kind;
             action.direction = direction;
-            action.timer = PLAYER_ACTION_TIMER(&action.action_type);
+            *timer = duration.generate_timer(&action);
             **busy = true;
         } else {
-            action.action_type = ActionType::Standing;
+            action.kind = PLAYER_ACTION_DEFAULT.kind;
         }
     }
 }
