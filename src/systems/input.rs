@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use crate::components::characters::*;
 use crate::components::action::*;
+use crate::components::flags::IsUser;
 use crate::constants::action::PLAYER_ACTION_DEFAULT;
 
 

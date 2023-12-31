@@ -1,17 +1,21 @@
+use std::ops::Mul;
+
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
+use crate::bundles::map::ChunkBundle;
+use crate::components::flags::IsGameCamera;
+use crate::components::mapping::ChunkList;
 use crate::constants::mapping::*;
-use crate::components::mapping::ChunkManager;
 use crate::generation::noise::TiledNoise;
 
 
-// Helper function
 pub fn spawn_chunk(
     commands: &mut Commands,
     asset_server: &AssetServer,
-    chunk_pos: IVec2
+    chunk_list: &mut ChunkList,
+    chunk_pos: IVec2,
 ) {
-    let tilemap_entity = commands.spawn_empty().id();
+    let chunk_entity = commands.spawn_empty().id();
     let mut tile_storage = TileStorage::empty(CHUNK_SIZE.into());
 
     let base_x = chunk_pos.x as i32 * CHUNK_SIZE.x as i32;
@@ -26,10 +30,10 @@ pub fn spawn_chunk(
                 .spawn(TileBundle {
                     position: tile_pos,
                     texture_index: TileTextureIndex(value),
-                    tilemap_id: TilemapId(tilemap_entity),
+                    tilemap_id: TilemapId(chunk_entity),
                     ..Default::default()
                 }).id();
-            commands.entity(tilemap_entity).add_child(tile_entity);
+            commands.entity(chunk_entity).add_child(tile_entity);
             tile_storage.set(&tile_pos, tile_entity);
         }
     }
@@ -42,15 +46,15 @@ pub fn spawn_chunk(
 
     let texture_handle: Handle<Image> = asset_server.load("tileset/environment/debug.png");
 
-    commands.entity(tilemap_entity).insert(TilemapBundle {
-        grid_size: TILE_SIZE.into(),
-        size: CHUNK_SIZE.into(),
-        storage: tile_storage,
-        texture: TilemapTexture::Single(texture_handle),
-        tile_size: TILE_SIZE,
-        transform,
-        ..Default::default()
-    });
+    let chunk = ChunkBundle::new(
+        tile_storage,
+        TilemapTexture::Single(texture_handle),
+        transform
+    );
+
+    chunk_list.list.insert(chunk_pos, chunk_entity);
+
+    commands.entity(chunk_entity).insert(chunk);
 }
 
 fn camera_pos_to_chunk_pos(camera_pos: &Vec2) -> IVec2 {
@@ -62,39 +66,49 @@ fn camera_pos_to_chunk_pos(camera_pos: &Vec2) -> IVec2 {
 
 pub fn handle_chunk_despawning(
     mut commands: Commands,
-    camera_query: Query<&Transform, With<Camera>>,
-    chunks_query: Query<(Entity, &Transform)>,
-    mut chunk_manager: ResMut<ChunkManager>,
+    camera_query: Query<&Transform, With<IsGameCamera>>,
+    mut chunk_list_query: Query<&mut ChunkList>
 ) {
-    for camera_transform in camera_query.iter() {
-        for (entity, chunk_transform) in chunks_query.iter() {
-            let chunk_pos = chunk_transform.translation.xy();
-            let distance = camera_transform.translation.xy().distance(chunk_pos);
-            if distance > CHUNK_DESPAWN_RANGE_PX {
-                let x = (chunk_pos.x / (CHUNK_SIZE.x as f32 * TILE_SIZE.x)).floor() as i32;
-                let y = (chunk_pos.y / (CHUNK_SIZE.y as f32 * TILE_SIZE.y)).floor() as i32;
-                chunk_manager.spawned_chunks.remove(&IVec2::new(x, y));
-                commands.entity(entity).despawn_recursive();
+    for mut chunk_list in chunk_list_query.iter_mut() {
+        let camera_transform = camera_query.single();
+        chunk_list.list.retain(|chunk_ipos, entity| {
+            let chunk_pos = chunk_ipos.as_vec2().mul(TILE);
+            let distance = camera_transform.translation.xy()
+                .distance_squared(chunk_pos);
+
+            if distance < CHUNK_DESPAWN_RANGE_PX_SQUARED {
+                true // Keep the chunk
+            } else {
+                commands.entity(*entity).despawn_recursive();
+                false // Remove the chunk
             }
-        }
+        });
     }
 }
 
 pub fn handle_chunk_spawning(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    camera_query: Query<&Transform, With<Camera>>,
-    mut chunk_manager: ResMut<ChunkManager>,
+    camera_query: Query<&Transform, With<IsGameCamera>>,
+    mut chunk_list_query: Query<&mut ChunkList>
 ) {
-    for transform in camera_query.iter() {
-        let camera_chunk_pos = camera_pos_to_chunk_pos(&transform.translation.xy());
+    for mut chunk_list in chunk_list_query.iter_mut() {
+        let transform = camera_query.single();
+        let camera_chunk_pos = camera_pos_to_chunk_pos(
+            &transform.translation.xy()
+        );
+
         for y in (camera_chunk_pos.y - CHUNK_SPAWN_RADIUS_Y)
                     ..(camera_chunk_pos.y + CHUNK_SPAWN_RADIUS_Y) {
             for x in (camera_chunk_pos.x - CHUNK_SPAWN_RADIUS_X)
                         ..(camera_chunk_pos.x + CHUNK_SPAWN_RADIUS_X) {
-                if !chunk_manager.spawned_chunks.contains(&IVec2::new(x, y)) {
-                    chunk_manager.spawned_chunks.insert(IVec2::new(x, y));
-                    spawn_chunk(&mut commands, &asset_server, IVec2::new(x, y));
+                if !chunk_list.list.contains_key(&IVec2::new(x, y)) {
+                    spawn_chunk(
+                        &mut commands,
+                        &asset_server,
+                        &mut chunk_list,
+                        IVec2::new(x, y)
+                    );
                 }
             }
         }

@@ -1,7 +1,6 @@
 use bevy::{prelude::*, time::common_conditions::on_timer};
 use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
-use components::mapping::ChunkManager;
 use constants::mapping::RENDER_CHUNK_SIZE;
 use constants::action::ACTION_TICK_FREQUENCY;
 use dotenv::dotenv;
@@ -44,7 +43,6 @@ async fn main(){
             ..Default::default()
         })
         .add_plugins(TilemapPlugin)
-        .insert_resource(ChunkManager::default())
         .add_systems(Startup, systems::setup::setup)
         .add_systems(Update, systems::input::handle_input)
         .add_systems(Update, systems::animation::animate_sprite)
