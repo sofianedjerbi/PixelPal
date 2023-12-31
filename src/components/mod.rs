@@ -3,3 +3,4 @@ pub mod animation;
 pub mod mapping;
 pub mod action;
 pub mod flags;
+pub mod gpt;

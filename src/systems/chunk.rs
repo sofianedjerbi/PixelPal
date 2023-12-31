@@ -14,7 +14,7 @@ pub fn spawn_chunk(
     chunk_list: &mut ChunkList,
     chunk_pos: IVec2,
 ) {
-    log::info!("Spawning chunk: {}", chunk_pos);
+    log::debug!("Spawning chunk: {}", chunk_pos);
     let chunk_entity = commands.spawn_empty().id();
     let mut tile_storage = TileStorage::empty(CHUNK_SIZE.into());
 
@@ -73,9 +73,7 @@ pub fn handle_chunk_despawning(
                 true // Keep the chunk
             } else {
                 commands.entity(*entity).despawn_recursive();
-                log::info!("Despawning chunk: {}", chunk_ipos);
-                log::info!("Despawning chunk cpos: {}", chunk_pos);
-                log::info!("Despawning chunk distance: {} > {}", distance, CHUNK_DESPAWN_RANGE_PX_SQUARED);
+                log::debug!("Despawning chunk: {}", chunk_ipos);
                 false // Remove the chunk
             }
         });

@@ -1,5 +1,8 @@
+use std::env;
+
 use bevy::prelude::*;
 use bevy_pixel_camera::*;
+use crate::bundles::gpt::GptBundle;
 use crate::bundles::map::MapBundle;
 use crate::bundles::player::PlayerBundle;
 use crate::components::flags::*;
@@ -29,7 +32,11 @@ pub fn setup(
     ).insert(IsUser);
 
     // Spawn Mittens (GPT)
-    commands.spawn(
-        PlayerBundle::new(MITTENS_SPAWN, &asset_server, &mut textures)
-    ).insert(IsBot);
+    let option_key = env::var("GPT_KEY");
+    if let Ok(key) = option_key {
+        let option_gpt = GptBundle::new(MITTENS_SPAWN, &asset_server, &mut textures, &key);
+        if let Some(gpt) = option_gpt {
+            commands.spawn(gpt).insert(IsBot);
+        }
+    }
 }

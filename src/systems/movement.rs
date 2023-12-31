@@ -1,9 +1,10 @@
-use bevy::log;
 use bevy::prelude::*;
 
 use crate::components::action::*;
 use crate::components::characters::*;
+use crate::components::flags::IsBot;
 use crate::components::flags::IsUser;
+use crate::components::gpt::GPTAgent;
 use crate::constants::action::ACTION_TICK_FREQUENCY;
 
 
@@ -36,8 +37,6 @@ pub fn move_characters(
             / timer.duration().as_secs_f32());
 
         transform.translation += movement;
-        transform.translation = (transform.translation*10000.).round()/10000.;
-        log::error!("{:?}",transform.translation);
     }
 }
 

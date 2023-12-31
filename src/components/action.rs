@@ -1,27 +1,33 @@
 use bevy::prelude::*;
 use phf::Map;
-use strum_macros::Display;
+use strum_macros::{Display, EnumString};
+use schemars::JsonSchema;
+use serde::Deserialize;
 
 use crate::constants::mapping::TILE;
 use crate::constants::action::WALKING_BPS;
 
 
-#[derive(Component, Clone, PartialEq, Eq, Hash, Display)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString)]
 pub enum ActionDirection {
+    #[strum(ascii_case_insensitive)]
     Up,
+    #[strum(ascii_case_insensitive)]
     Down,
+    #[strum(ascii_case_insensitive)]
     Left,
+    #[strum(ascii_case_insensitive)]
     Right
 }
 
-#[derive(Component, Clone, PartialEq, Eq, Hash, Display)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize)]
 pub enum ActionKind {
     Standing,
     Walking,
     // Add future actions here
 }
 
-#[derive(Component, Clone, PartialEq, Eq, Hash)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, JsonSchema, Deserialize)]
 pub struct Action {
     pub kind: ActionKind,
     pub direction: ActionDirection

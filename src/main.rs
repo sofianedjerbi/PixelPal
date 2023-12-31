@@ -1,11 +1,12 @@
-use bevy::{prelude::*, time::common_conditions::on_timer};
+use bevy::log::LogPlugin;
+use bevy::prelude::*;
+use bevy::time::common_conditions::on_timer;
 use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
 use constants::mapping::RENDER_CHUNK_SIZE;
 use constants::action::ACTION_TICK_FREQUENCY;
 use dotenv::dotenv;
 
-mod util;
 mod systems;
 mod components;
 mod bundles;
@@ -13,8 +14,8 @@ mod generation;
 mod constants;
 
 
-#[tokio::main]
-async fn main(){
+
+fn main(){
     // setup program
     dotenv().ok();
 
@@ -29,6 +30,10 @@ async fn main(){
         .add_plugins(
             DefaultPlugins
             .set(ImagePlugin::default_nearest())
+            .set(LogPlugin {
+                filter: "info,wgpu_core=warn,wgpu_hal=warn,test=debug".into(),
+                level: bevy::log::Level::DEBUG,
+            })
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title: String::from("TestGame"),
@@ -45,13 +50,17 @@ async fn main(){
         .add_plugins(TilemapPlugin)
         .add_systems(Startup, systems::setup::setup)
         .add_systems(Update, systems::input::handle_input)
+        .add_systems(Update, systems::input::handle_bot_input)
         .add_systems(Update, systems::animation::animate_sprite)
         .add_systems(
             Update,
             systems::movement::move_characters
                 .run_if(on_timer(ACTION_TICK_FREQUENCY))
         )
-        .add_systems(Update, systems::movement::camera_follow_player)
+        .add_systems(Update, 
+            systems::movement::camera_follow_player
+                .after(systems::movement::move_characters)
+        )
         .add_systems(Update, systems::chunk::handle_chunk_spawning)
         .add_systems(Update, systems::chunk::handle_chunk_despawning)
         .run();
