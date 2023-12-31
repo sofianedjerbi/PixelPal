@@ -1,3 +1,4 @@
+use bevy::log;
 use bevy::prelude::*;
 
 use crate::components::action::*;
@@ -12,7 +13,7 @@ pub fn move_characters(
         &mut Busy, 
         &Action,
         &mut ActionTimer
-    ), With<IsUser>>,
+    )>,
 ) {
     for (
         mut transform,
@@ -26,8 +27,7 @@ pub fn move_characters(
 
         if timer.finished() {
             **busy = false;
-            // Fix f32 residus
-
+            transform.translation = transform.translation.round();
             return
         }
 
@@ -36,7 +36,8 @@ pub fn move_characters(
             / timer.duration().as_secs_f32());
 
         transform.translation += movement;
-        transform.translation = (transform.translation*100.).round()/100.;
+        transform.translation = (transform.translation*10000.).round()/10000.;
+        log::error!("{:?}",transform.translation);
     }
 }
 

@@ -40,5 +40,4 @@ impl MapBundle {
             chunk_list: ChunkList::new()
         }
     }
-    pub fn add_chunk() {}
 }

@@ -1,6 +1,5 @@
-use std::ops::Mul;
-
 use bevy::prelude::*;
+use bevy::log;
 use bevy_ecs_tilemap::prelude::*;
 use crate::bundles::map::ChunkBundle;
 use crate::components::flags::IsGameCamera;
@@ -15,6 +14,7 @@ pub fn spawn_chunk(
     chunk_list: &mut ChunkList,
     chunk_pos: IVec2,
 ) {
+    log::info!("Spawning chunk: {}", chunk_pos);
     let chunk_entity = commands.spawn_empty().id();
     let mut tile_storage = TileStorage::empty(CHUNK_SIZE.into());
 
@@ -39,8 +39,8 @@ pub fn spawn_chunk(
     }
 
     let transform = Transform::from_xyz(
-        base_x as f32 * TILE_SIZE.x,
-        base_y as f32 * TILE_SIZE.y,
+        base_x as f32 * TILE,
+        base_y as f32 * TILE,
         0.0,
     );
 
@@ -57,13 +57,6 @@ pub fn spawn_chunk(
     commands.entity(chunk_entity).insert(chunk);
 }
 
-fn camera_pos_to_chunk_pos(camera_pos: &Vec2) -> IVec2 {
-    let camera_pos = camera_pos.as_ivec2();
-    let chunk_size: IVec2 = IVec2::new(CHUNK_SIZE.x as i32, CHUNK_SIZE.y as i32);
-    let tile_size: IVec2 = IVec2::new(TILE_SIZE.x as i32, TILE_SIZE.y as i32);
-    camera_pos / (chunk_size * tile_size)
-}
-
 pub fn handle_chunk_despawning(
     mut commands: Commands,
     camera_query: Query<&Transform, With<IsGameCamera>>,
@@ -72,7 +65,7 @@ pub fn handle_chunk_despawning(
     for mut chunk_list in chunk_list_query.iter_mut() {
         let camera_transform = camera_query.single();
         chunk_list.list.retain(|chunk_ipos, entity| {
-            let chunk_pos = chunk_ipos.as_vec2().mul(TILE);
+            let chunk_pos = chunk_pos_to_camera_pos(chunk_ipos);
             let distance = camera_transform.translation.xy()
                 .distance_squared(chunk_pos);
 
@@ -80,6 +73,9 @@ pub fn handle_chunk_despawning(
                 true // Keep the chunk
             } else {
                 commands.entity(*entity).despawn_recursive();
+                log::info!("Despawning chunk: {}", chunk_ipos);
+                log::info!("Despawning chunk cpos: {}", chunk_pos);
+                log::info!("Despawning chunk distance: {} > {}", distance, CHUNK_DESPAWN_RANGE_PX_SQUARED);
                 false // Remove the chunk
             }
         });
@@ -113,4 +109,18 @@ pub fn handle_chunk_spawning(
             }
         }
     }
+}
+
+fn camera_pos_to_chunk_pos(camera_pos: &Vec2) -> IVec2 {
+    let camera_pos = camera_pos.as_ivec2();
+    let chunk_size: IVec2 = IVec2::new(CHUNK_SIZE.x as i32, CHUNK_SIZE.y as i32);
+    let tile_size: IVec2 = IVec2::new(TILE as i32, TILE as i32);
+    camera_pos / (chunk_size * tile_size)
+}
+
+fn chunk_pos_to_camera_pos(chunk_pos: &IVec2) -> Vec2 {
+    let chunk_size: IVec2 = CHUNK_SIZE.as_ivec2();
+    let tile_size: IVec2 = IVec2::new(TILE as i32, TILE as i32);
+    let camera_pos = *chunk_pos * chunk_size * tile_size;
+    camera_pos.as_vec2()
 }
