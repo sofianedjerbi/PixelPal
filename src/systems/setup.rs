@@ -3,7 +3,6 @@ use std::env;
 use bevy::prelude::*;
 use bevy_pixel_camera::*;
 use crate::bundles::gpt::GptBundle;
-use crate::bundles::map::MapBundle;
 use crate::bundles::player::PlayerBundle;
 use crate::components::flags::*;
 use crate::constants::characters::*;
@@ -22,9 +21,6 @@ pub fn setup(
         PixelZoom::Fixed(ZOOM),
         PixelViewport,
     )).insert(IsGameCamera);
-
-    // Spawn Map
-    commands.spawn(MapBundle::new());
 
     // Spawn Player
     commands.spawn(

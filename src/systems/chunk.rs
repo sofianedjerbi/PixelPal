@@ -2,13 +2,12 @@ use bevy::prelude::*;
 use bevy::log;
 use bevy_ecs_tilemap::prelude::*;
 use crate::bundles::map::ChunkBundle;
-use crate::components::flags::IsGameCamera;
-use crate::components::mapping::ChunkList;
+use crate::components::mapping::*;
 use crate::constants::mapping::*;
 use crate::generation::noise::TiledNoise;
 
 
-pub fn spawn_chunk(
+fn spawn_chunk(
     commands: &mut Commands,
     asset_server: &AssetServer,
     chunk_list: &mut ChunkList,
@@ -59,20 +58,23 @@ pub fn spawn_chunk(
 
 pub fn handle_chunk_despawning(
     mut commands: Commands,
-    camera_query: Query<&Transform, With<IsGameCamera>>,
-    mut chunk_list_query: Query<&mut ChunkList>
+    mut all_chunks: ResMut<IndexChunkList>,
+    mut loader_query: Query<(&Transform, &mut ChunkList)>
 ) {
-    for mut chunk_list in chunk_list_query.iter_mut() {
-        let camera_transform = camera_query.single();
+    for (
+        transform,
+        mut chunk_list
+    ) in loader_query.iter_mut() {
         chunk_list.list.retain(|chunk_ipos, entity| {
             let chunk_pos = chunk_pos_to_camera_pos(chunk_ipos);
-            let distance = camera_transform.translation.xy()
+            let distance = transform.translation.xy()
                 .distance_squared(chunk_pos);
 
             if distance < CHUNK_DESPAWN_RANGE_PX_SQUARED {
                 true // Keep the chunk
             } else {
                 commands.entity(*entity).despawn_recursive();
+                all_chunks.list.remove(chunk_ipos);
                 log::debug!("Despawning chunk: {}", chunk_ipos);
                 false // Remove the chunk
             }
@@ -83,11 +85,13 @@ pub fn handle_chunk_despawning(
 pub fn handle_chunk_spawning(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    camera_query: Query<&Transform, With<IsGameCamera>>,
-    mut chunk_list_query: Query<&mut ChunkList>
+    mut all_chunks: ResMut<IndexChunkList>,
+    mut loader_query: Query<(&Transform, &mut ChunkList)>
 ) {
-    for mut chunk_list in chunk_list_query.iter_mut() {
-        let transform = camera_query.single();
+    for (
+        transform,
+        mut chunk_list
+    ) in loader_query.iter_mut() {
         let camera_chunk_pos = camera_pos_to_chunk_pos(
             &transform.translation.xy()
         );
@@ -96,12 +100,14 @@ pub fn handle_chunk_spawning(
                     ..(camera_chunk_pos.y + CHUNK_SPAWN_RADIUS_Y) {
             for x in (camera_chunk_pos.x - CHUNK_SPAWN_RADIUS_X)
                         ..(camera_chunk_pos.x + CHUNK_SPAWN_RADIUS_X) {
-                if !chunk_list.list.contains_key(&IVec2::new(x, y)) {
+                let chunk_ipos = IVec2::new(x, y);
+                if !all_chunks.list.contains(&chunk_ipos) {
+                    all_chunks.list.insert(chunk_ipos);
                     spawn_chunk(
                         &mut commands,
                         &asset_server,
                         &mut chunk_list,
-                        IVec2::new(x, y)
+                        chunk_ipos
                     );
                 }
             }

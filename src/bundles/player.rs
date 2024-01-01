@@ -2,10 +2,12 @@ use bevy::prelude::*;
 use crate::components::action::*;
 use crate::components::animation::*;
 use crate::components::characters::*;
+use crate::components::mapping::ChunkList;
 use crate::constants::action::PLAYER_ACTION_DEFAULT;
 use crate::constants::action::PLAYER_ACTION_DURATION_MAP;
 use crate::constants::characters::*;
 use crate::constants::sprites::*;
+
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
@@ -16,7 +18,8 @@ pub struct PlayerBundle {
     pub animation_state: AnimationState,
     pub action_timer: ActionTimer,
     pub animation_frames: AnimationFramesMap,
-    pub action_duration: ActionDurationPHF
+    pub action_duration: ActionDurationPHF,
+    pub chunk_list: ChunkList
 }
 
 impl PlayerBundle {
@@ -50,7 +53,8 @@ impl PlayerBundle {
             action_timer: PLAYER_ACTION_DURATION_MAP
                 .generate_timer(&PLAYER_ACTION_DEFAULT),
             animation_frames: PLAYER_SPRITE_INDICES_MAP.clone(),
-            action_duration: PLAYER_ACTION_DURATION_MAP
+            action_duration: PLAYER_ACTION_DURATION_MAP,
+            chunk_list: ChunkList::new()
         }
     }
 }

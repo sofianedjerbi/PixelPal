@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use crate::constants::mapping::*;
-use crate::components::mapping::ChunkList;
 
 
 #[derive(Bundle)]
@@ -25,19 +24,6 @@ impl ChunkBundle {
                 transform: transform,
                 ..Default::default()
             }
-        }
-    }
-}
-
-#[derive(Bundle)]
-pub struct MapBundle {
-    pub chunk_list: ChunkList,
-}
-
-impl MapBundle {
-    pub fn new() -> Self {
-        Self { 
-            chunk_list: ChunkList::new()
         }
     }
 }

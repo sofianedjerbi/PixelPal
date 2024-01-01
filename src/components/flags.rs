@@ -8,4 +8,3 @@ pub struct IsBot;
 
 #[derive(Component)]
 pub struct IsGameCamera;
-

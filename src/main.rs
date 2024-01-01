@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
+use components::mapping::IndexChunkList;
 use constants::gpt::SEND_MAP_FREQUENCY;
 use constants::mapping::RENDER_CHUNK_SIZE;
 use constants::action::ACTION_TICK_FREQUENCY;
@@ -71,5 +72,6 @@ fn main(){
         )
         .add_systems(Update, systems::chunk::handle_chunk_spawning)
         .add_systems(Update, systems::chunk::handle_chunk_despawning)
+        .insert_resource(IndexChunkList::new())
         .run();
 }
