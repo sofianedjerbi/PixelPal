@@ -60,7 +60,7 @@ pub fn handle_bot_input(
         &mut Action,
         &mut ActionTimer,
         &ActionDurationPHF,
-        &mut GPTAgent
+        &GPTAgent
     ), With<IsBot>>
 ) {
     for (

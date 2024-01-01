@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::components::gpt::GPTAgent;
-use crate::constants::gpt::{CONTEXT, COMMANDS};
+use crate::constants::gpt::{COMMANDS, CONTEXT};
 
 use super::player::PlayerBundle;
 
@@ -21,7 +21,8 @@ impl GptBundle {
         match GPTAgent::new(key) {
             None => None,
             Some(mut agent) => {
-                agent.send_message(format!("{} {}", CONTEXT, COMMANDS));
+                agent.add_context(CONTEXT);
+                agent.add_context(COMMANDS);
                 Some(GptBundle {
                     player: PlayerBundle::new(position, asset_server, textures),
                     agent

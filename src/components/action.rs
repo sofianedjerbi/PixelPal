@@ -3,6 +3,7 @@ use phf::Map;
 use strum_macros::{Display, EnumString};
 use schemars::JsonSchema;
 use serde::Deserialize;
+use std::str::FromStr;
 
 use crate::constants::mapping::TILE;
 use crate::constants::action::WALKING_BPS;
@@ -20,9 +21,11 @@ pub enum ActionDirection {
     Right
 }
 
-#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString)]
 pub enum ActionKind {
+    #[strum(ascii_case_insensitive, serialize = "STAND", serialize = "Standing")]
     Standing,
+    #[strum(ascii_case_insensitive, serialize = "WALK", serialize = "Walking")]
     Walking,
     // Add future actions here
 }
@@ -55,6 +58,40 @@ impl Action {
         };
 
         Vec3::new(vector.x, vector.y, 0.)
+    }
+
+    pub fn from_command_string(commands: &str) -> Option<Vec<Action>> {
+        let uppercase = commands.to_uppercase();
+        let mut actions = Vec::new();
+        for line in uppercase.lines() {
+            if let Some(mut line_actions) = Self::from_single_command_string(line) {
+                actions.append(&mut line_actions);
+            }
+        }
+        if actions.is_empty() {
+            None
+        } else {
+            Some(actions)
+        }
+    }
+
+    fn from_single_command_string(command: &str) -> Option<Vec<Action>> {
+        let parts: Vec<&str> = command.split_whitespace().collect();
+        if parts.len() < 2 || parts.len() > 3 {
+            return None;
+        }
+
+        let kind = ActionKind::from_str(parts[0]).ok()?;
+        let direction = ActionDirection::from_str(parts[1]).ok()?;
+
+        let times = if parts.len() == 3 {
+            parts[2].parse::<usize>().ok()? 
+        } else {
+            1
+        };
+
+        // Create the specified number of Action structs
+        Some(vec![Action { kind, direction }; times])
     }
 }
 

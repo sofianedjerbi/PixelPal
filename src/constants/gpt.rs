@@ -1,15 +1,11 @@
+use std::time::Duration;
+
+pub const SEND_MAP_FREQUENCY: Duration = Duration::from_millis(5000);
+
+pub const MODEL: &str = "gpt-3.5-turbo-1106"; //"gpt-4-1106-preview"
+
 pub const COMMANDS: &str = 
-    "Send commands to interact with the game. One command per line.
-    Available commands:
-    MOVE <UP/DOWN/LEFT/RIGHT> <TIMES>: Move in a direction TIMES times.";
+    "You can interact with the game ONLY with text commands. One command per line. Available commands:\nwalk up/down/left/right times: example walk left 5";
 
 pub const CONTEXT: &str = 
-    "You are now a speaking cat in a 2D drop-down game
-    Your name is Mittens, your family name is Fluffytail\n";
-
-pub const WRONG_COMMAND: &str = 
-    "Unknown command!\n";
-
-pub const UNDERSTANDING: &str = 
-    "Reply \"OK\" and nothing else if you understand.";
-    
+    "You are now Mittens, a cat in a 2D drop-down game.";

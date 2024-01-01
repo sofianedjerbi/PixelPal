@@ -109,14 +109,14 @@ pub fn handle_chunk_spawning(
     }
 }
 
-fn camera_pos_to_chunk_pos(camera_pos: &Vec2) -> IVec2 {
+pub fn camera_pos_to_chunk_pos(camera_pos: &Vec2) -> IVec2 {
     let camera_pos = camera_pos.as_ivec2();
     let chunk_size: IVec2 = IVec2::new(CHUNK_SIZE.x as i32, CHUNK_SIZE.y as i32);
     let tile_size: IVec2 = IVec2::new(TILE as i32, TILE as i32);
     camera_pos / (chunk_size * tile_size)
 }
 
-fn chunk_pos_to_camera_pos(chunk_pos: &IVec2) -> Vec2 {
+pub fn chunk_pos_to_camera_pos(chunk_pos: &IVec2) -> Vec2 {
     let chunk_size: IVec2 = CHUNK_SIZE.as_ivec2();
     let tile_size: IVec2 = IVec2::new(TILE as i32, TILE as i32);
     let camera_pos = *chunk_pos * chunk_size * tile_size;

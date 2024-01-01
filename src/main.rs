@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
+use constants::gpt::SEND_MAP_FREQUENCY;
 use constants::mapping::RENDER_CHUNK_SIZE;
 use constants::action::ACTION_TICK_FREQUENCY;
 use dotenv::dotenv;
@@ -12,6 +13,7 @@ mod components;
 mod bundles;
 mod generation;
 mod constants;
+mod events;
 
 
 
@@ -57,7 +59,13 @@ fn main(){
             systems::movement::move_characters
                 .run_if(on_timer(ACTION_TICK_FREQUENCY))
         )
-        .add_systems(Update, 
+        .add_systems(
+            Update,
+            systems::bot::send_map_to_bot
+                .run_if(on_timer(SEND_MAP_FREQUENCY))
+        )
+        .add_systems(
+            Update, 
             systems::movement::camera_follow_player
                 .after(systems::movement::move_characters)
         )

@@ -2,9 +2,7 @@ use bevy::prelude::*;
 
 use crate::components::action::*;
 use crate::components::characters::*;
-use crate::components::flags::IsBot;
 use crate::components::flags::IsUser;
-use crate::components::gpt::GPTAgent;
 use crate::constants::action::ACTION_TICK_FREQUENCY;
 
 
