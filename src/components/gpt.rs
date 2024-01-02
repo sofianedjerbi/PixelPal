@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use chatgpt::prelude::*;
 use tokio::sync::Mutex;
 
-use crate::constants::gpt::*;
+use crate::constants::bot::*;
 
 use super::action::Action;
 
@@ -23,10 +23,7 @@ impl GPTConversation {
         }
     }
 
-    async fn get_actions(
-        self
-    ) -> Option<Vec<Action>> {
-        let message = self.history.join("\n");
+    async fn send_message_get_actions(&self, message: &str) -> Option<Vec<Action>> {
         log::info!("Sending:\n\"{}\"", message);
         match self.client.send_message(message).await {
             Ok(response) => {
@@ -40,6 +37,15 @@ impl GPTConversation {
                 None
             }
         }
+    }
+
+    async fn get_actions_with_extra_context(
+        &self,
+        context: &str
+    ) -> Option<Vec<Action>> {
+        let mut message = self.history.join("\n");
+        message.push_str(context);
+        self.send_message_get_actions(&message).await
     }
 
     fn add_context(
@@ -83,13 +89,15 @@ impl GPTAgent {
         }
     }
 
-    pub fn create_actions(&self) {
+    pub fn create_actions_with_extra_context(&self, message: &str) {
         let queue_arc = Arc::clone(&self.action_queue);
         let conversation = self.conversation.clone();
+        let message_clone = "\n".to_string() + message;
 
         async_global_executor::spawn(async move {
             if let Ok(mut queue) = queue_arc.try_lock() {
-                if let Some(actions) = conversation.get_actions().await {
+                if let Some(actions) = conversation
+                    .get_actions_with_extra_context(&message_clone).await {
                     queue.extend(actions);
                 }
             }

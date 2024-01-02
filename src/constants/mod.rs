@@ -4,4 +4,4 @@ pub mod display;
 pub mod sprites;
 pub mod characters;
 pub mod action;
-pub mod gpt;
+pub mod bot;

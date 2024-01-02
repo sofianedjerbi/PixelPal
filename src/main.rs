@@ -3,8 +3,8 @@ use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
-use components::mapping::IndexChunkList;
-use constants::gpt::SEND_MAP_FREQUENCY;
+use components::map::ChunkMap;
+use constants::bot::SEND_MAP_FREQUENCY;
 use constants::mapping::RENDER_CHUNK_SIZE;
 use constants::action::ACTION_TICK_FREQUENCY;
 use dotenv::dotenv;
@@ -12,23 +12,15 @@ use dotenv::dotenv;
 mod systems;
 mod components;
 mod bundles;
-mod generation;
+mod util;
 mod constants;
 mod events;
 
 
 
 fn main(){
-    // setup program
     dotenv().ok();
 
-    // get API, load client & get client ready
-    //let api_key = env::var("GPT_KEY").expect("GPT_KEY not found");
-    //let client = ai::chat_gpt::new_client(&api_key).unwrap();
-    //let conversation = client.new_conversation();
-    //ai::chat_gpt::send_instructions(conversation).await;
-
-    // run app
     App::new()
         .add_plugins(
             DefaultPlugins
@@ -72,6 +64,6 @@ fn main(){
         )
         .add_systems(Update, systems::chunk::handle_chunk_spawning)
         .add_systems(Update, systems::chunk::handle_chunk_despawning)
-        .insert_resource(IndexChunkList::new())
+        .insert_resource(ChunkMap::new())
         .run();
 }

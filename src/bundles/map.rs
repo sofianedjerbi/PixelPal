@@ -1,7 +1,14 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use crate::constants::mapping::*;
+use crate::components::map::*;
 
+
+#[derive(Bundle)]
+pub struct DataTileBundle {
+    pub tile: TileBundle,
+    pub level: ReliefLevel
+}
 
 #[derive(Bundle)]
 pub struct ChunkBundle {
