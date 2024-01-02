@@ -77,9 +77,9 @@ pub fn handle_bot_input(
                 *action = new_action.clone();
                 *timer = duration.generate_timer(&action);
                 **busy = true;
-            } else {
-                action.kind = PLAYER_ACTION_DEFAULT.kind;
+                return;
             }
         }
+        action.kind = PLAYER_ACTION_DEFAULT.kind;
     }
 }

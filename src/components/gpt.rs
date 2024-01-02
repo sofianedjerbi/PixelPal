@@ -1,5 +1,7 @@
 use std::sync::Arc;
 use std::collections::VecDeque;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
 use bevy::log;
 use bevy::prelude::*;
 use chatgpt::prelude::*;
@@ -12,31 +14,40 @@ use super::action::Action;
 #[derive(Clone)]
 struct GPTConversation {
     client: ChatGPT,
-    history: Vec<String>
+    history: Vec<String>,
+    busy: Arc<AtomicBool>
 }
 
 impl GPTConversation {
     fn new(client: ChatGPT) -> Self {
         Self {
             client,
-            history: Vec::new()
+            history: Vec::new(),
+            busy: Arc::new(AtomicBool::new(false)),
         }
     }
 
     async fn send_message_get_actions(&self, message: &str) -> Option<Vec<Action>> {
-        log::info!("Sending:\n\"{}\"", message);
-        match self.client.send_message(message).await {
+        if self.busy.swap(true, Ordering::Acquire) {
+            return None;
+        }
+
+        log::info!("Sending:\n{}", message);
+        let actions = match self.client.send_message(message).await {
             Ok(response) => {
                 let response_txt = &response.message().content;
-                log::info!("Received:\n\"{}\"", &response_txt);
-                // Eventually save the answer here (if the agent is using talk command)
+                log::info!("Received:\n{}", &response_txt);
                 Action::from_command_string(&response_txt)
             },
             Err(e) => {
                 log::warn!("Cannot get GPT answer: {}", e);
                 None
             }
-        }
+        };
+
+        self.busy.store(false, Ordering::Release);
+
+        actions
     }
 
     async fn get_actions_with_extra_context(
@@ -109,5 +120,9 @@ impl GPTAgent {
         message: &str
     ) {
         self.conversation.add_context(message.to_string());
+    }
+    
+    pub fn is_busy(&self) -> bool {
+        self.conversation.busy.load(Ordering::Relaxed)
     }
 }

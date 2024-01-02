@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::components::gpt::GPTAgent;
-use crate::constants::bot::{COMMANDS, CONTEXT};
+use crate::constants::bot::*;
 
 use super::player::PlayerBundle;
 

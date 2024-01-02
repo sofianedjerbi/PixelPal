@@ -4,7 +4,6 @@ use bevy::time::common_conditions::on_timer;
 use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
 use components::map::ChunkMap;
-use constants::bot::SEND_MAP_FREQUENCY;
 use constants::mapping::RENDER_CHUNK_SIZE;
 use constants::action::ACTION_TICK_FREQUENCY;
 use dotenv::dotenv;
@@ -44,8 +43,11 @@ fn main(){
         })
         .add_plugins(TilemapPlugin)
         .add_systems(Startup, systems::setup::setup)
+        .add_systems(PostStartup, systems::chunk::handle_chunk_spawning)
         .add_systems(Update, systems::input::handle_input)
         .add_systems(Update, systems::input::handle_bot_input)
+        .add_systems(Update, systems::chunk::handle_chunk_spawning)
+        .add_systems(Update, systems::chunk::handle_chunk_despawning)
         .add_systems(Update, systems::animation::animate_sprite)
         .add_systems(
             Update,
@@ -55,15 +57,13 @@ fn main(){
         .add_systems(
             Update,
             systems::bot::send_map_to_bot
-                .run_if(on_timer(SEND_MAP_FREQUENCY))
+                .after(systems::chunk::handle_chunk_spawning)
         )
         .add_systems(
             Update, 
             systems::movement::camera_follow_player
                 .after(systems::movement::move_characters)
         )
-        .add_systems(Update, systems::chunk::handle_chunk_spawning)
-        .add_systems(Update, systems::chunk::handle_chunk_despawning)
         .insert_resource(ChunkMap::new())
         .run();
 }

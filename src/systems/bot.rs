@@ -1,7 +1,7 @@
 use bevy::{prelude::*, log};
 use bevy_ecs_tilemap::tiles::{TileStorage, TilePos};
 
-use crate::components::flags::IsBot;
+use crate::components::flags::*;
 use crate::components::gpt::GPTAgent;
 use crate::components::map::*;
 use crate::constants::bot::BOT_VIEW_DISTANCE;
@@ -12,7 +12,8 @@ pub fn send_map_to_bot(
     chunk_map: Res<ChunkMap>,
     chunk_query: Query<&TileStorage>,
     tile_query: Query<&ReliefLevel>,
-    bot_query: Query<(&Transform, &GPTAgent), With<IsBot>>
+    bot_query: Query<(&Transform, &GPTAgent), With<IsBot>>,
+    user_query: Query<&Transform, With<IsUser>>
 ) {
     for (transform, agent) in bot_query.iter() {
         let is_empty = {
@@ -26,25 +27,24 @@ pub fn send_map_to_bot(
         if !is_empty {
             return;
         }
-        
 
-        let player_tile_pos = pixel_pos_to_tile_pos_player(
+        if agent.is_busy() {
+            return;
+        }
+
+        let bot_tile_pos = pixel_pos_to_tile_pos_player(
             &transform.translation.xy(),
             PLAYER_SPRITE_SIZE.y / 2.
         );
 
-        let mut map = String::from(format!("{}x{}\n", BOT_VIEW_DISTANCE, BOT_VIEW_DISTANCE));
+        let mut map = Vec::new();
 
-        for y in (player_tile_pos.y - BOT_VIEW_DISTANCE)
-                    ..(player_tile_pos.y + BOT_VIEW_DISTANCE) {
-            for x in (player_tile_pos.x - BOT_VIEW_DISTANCE)
-                        ..(player_tile_pos.x + BOT_VIEW_DISTANCE) {
+        // Write tiles relief
+        for y in ((bot_tile_pos.y - BOT_VIEW_DISTANCE)
+                     ..(bot_tile_pos.y + BOT_VIEW_DISTANCE + 1)).rev() {
+            for x in (bot_tile_pos.x - BOT_VIEW_DISTANCE)
+                        ..(bot_tile_pos.x + BOT_VIEW_DISTANCE + 1) {
                 let tile_pos = IVec2::new(x, y);
-
-                if tile_pos == player_tile_pos {
-                    map.push('X');
-                    continue;
-                }
 
                 let chunk_pos = tile_pos_to_chunk_pos(&tile_pos);
                 let relative_tile_pos = relative_tile_pos(&tile_pos);
@@ -52,30 +52,60 @@ pub fn send_map_to_bot(
                     x: relative_tile_pos.x as u32,
                     y: relative_tile_pos.y as u32
                 };
-                log::error!("{:?}:{:?}:{:?}", tile_pos, relative_tile_pos, chunk_pos);
 
                 if let Some(chunk_entity) = chunk_map.get(&chunk_pos) {
-                    if let Ok(tile_storage) = chunk_query.get(*chunk_entity) {
-                        if let Some(tile_entity) = tile_storage.get(&relative_tile_pos) {
-                            if let Ok(relief_level) = tile_query.get(tile_entity) {
-                                map.push_str(&format!("{}", relief_level));
+                    match chunk_query.get(*chunk_entity) {
+                        Ok(tile_storage) => {
+                            if let Some(tile_entity) = tile_storage.get(&relative_tile_pos) {
+                                match tile_query.get(tile_entity) {
+                                    Ok(relief_level) => map.push(std::char::from_digit(**relief_level, 10).unwrap()),
+                                    Err(e) => {
+                                        log::error!("Failed to get relief level: {}", e);
+                                        map.push('a');
+                                    },
+                                }
                             } else {
-                                map.push_str("?");
+                                log::error!("No tile entity found at the given position");
+                                map.push('b');
                             }
-                        } else {
-                            map.push_str("?");
+                        },
+                        Err(e) => {
+                            log::error!("Failed to get tile storage: {}", e);
+                            map.push('c');
                         }
-                    } else {
-                        map.push_str(&"?".repeat(BOT_VIEW_DISTANCE as usize));
-                        map.push_str("\n");
                     }
                 } else {
-                    map.push_str(&"?".repeat(BOT_VIEW_DISTANCE as usize));
-                    map.push_str("\n");
+                    log::error!("No chunk entity found at the given position");
+                    map.push('d');
                 }
             }
-            map.push_str("\n");
+            map.push('\n');
         }
-        agent.create_actions_with_extra_context(&map);
+
+        // Write bot position
+        map[BOT_VIEW_DISTANCE as usize * (BOT_VIEW_DISTANCE * 2 + 3) as usize] = 'U';
+
+        // Write user position
+        for transform in user_query.iter() {
+            let user_tile_pos = pixel_pos_to_tile_pos_player(
+                &transform.translation.xy(),
+                PLAYER_SPRITE_SIZE.y / 2.
+            );
+
+            let mut relative_position = user_tile_pos - bot_tile_pos;
+            log::error!("relative_position: {}", relative_position);
+            if relative_position.x.abs() <= BOT_VIEW_DISTANCE
+            && relative_position.y.abs() <= BOT_VIEW_DISTANCE {
+                relative_position.y = - relative_position.y;
+                let index = relative_position.x + BOT_VIEW_DISTANCE 
+                               + (relative_position.y + BOT_VIEW_DISTANCE) 
+                               * (BOT_VIEW_DISTANCE * 2 + 2);
+                log::error!("Index: {}", index);
+                map[index as usize] = 'P';
+            }
+        }
+
+        //log::error!("{}", &map.iter().collect::<String>());
+        agent.create_actions_with_extra_context(&map.iter().collect::<String>());
     }
 }

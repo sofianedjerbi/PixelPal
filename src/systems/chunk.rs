@@ -13,7 +13,6 @@ use crate::util::position::*;
 fn spawn_chunk(
     commands: &mut Commands,
     asset_server: &AssetServer,
-    chunk_map: &mut ChunkMap,
     chunk_pos: IVec2,
 ) -> Entity {
     log::debug!("Spawning chunk: {}", chunk_pos);
@@ -109,7 +108,6 @@ pub fn handle_chunk_spawning(
                     let chunk_entity = spawn_chunk(
                         &mut commands,
                         &asset_server,
-                        &mut chunk_map,
                         chunk_ipos
                     );
                     all_chunks.insert(chunk_ipos, chunk_entity);
