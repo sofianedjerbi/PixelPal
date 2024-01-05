@@ -4,7 +4,7 @@ use bevy::time::common_conditions::on_timer;
 use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
 use components::map::ChunkMap;
-use constants::mapping::RENDER_CHUNK_SIZE;
+use constants::map::RENDER_CHUNK_SIZE;
 use constants::action::ACTION_TICK_FREQUENCY;
 use dotenv::dotenv;
 
@@ -49,15 +49,11 @@ fn main(){
         .add_systems(Update, systems::chunk::handle_chunk_spawning)
         .add_systems(Update, systems::chunk::handle_chunk_despawning)
         .add_systems(Update, systems::animation::animate_sprite)
+        .add_systems(Update, systems::bot::send_map_to_bot)
         .add_systems(
             Update,
             systems::movement::move_characters
                 .run_if(on_timer(ACTION_TICK_FREQUENCY))
-        )
-        .add_systems(
-            Update,
-            systems::bot::send_map_to_bot
-                .after(systems::chunk::handle_chunk_spawning)
         )
         .add_systems(
             Update, 

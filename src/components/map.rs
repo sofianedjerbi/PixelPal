@@ -17,10 +17,13 @@ impl fmt::Display for ReliefLevel {
 pub struct SavingName(pub String);
 
 #[derive(Component, Resource, Default, Deref, DerefMut)]
-pub struct ChunkMap(pub HashMap<IVec2, Entity>);
+pub struct ChunkMap(pub HashMap<IVec2, (Entity, Entity)>);
 
 impl ChunkMap {
     pub fn new() -> Self {
         Self(HashMap::new())
     }
 }
+
+#[derive(Component, Clone, Deref)]
+pub struct LayerId(pub u32);

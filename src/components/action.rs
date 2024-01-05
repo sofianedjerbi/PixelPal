@@ -5,7 +5,7 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 use std::str::FromStr;
 
-use crate::constants::mapping::TILE;
+use crate::constants::map::TILE;
 use crate::constants::action::WALKING_BPS;
 
 

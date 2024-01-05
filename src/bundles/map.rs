@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use crate::constants::mapping::*;
-use crate::components::map::*;
+use crate::{components::map::*, constants::map::*};
 
 
 #[derive(Bundle)]
@@ -10,18 +9,22 @@ pub struct DataTileBundle {
     pub level: ReliefLevel
 }
 
-#[derive(Bundle)]
-pub struct ChunkBundle {
-    pub tilemap: TilemapBundle,
+
+#[derive(Bundle, Clone)]
+pub struct Layer{
+    pub id: LayerId,
+    pub tilemap: TilemapBundle
 }
 
-impl ChunkBundle {
+impl Layer {
     pub fn new(
+        id: u32,
         storage: TileStorage,
         texture: TilemapTexture,
         transform: Transform
     ) -> Self {
         Self {
+            id: LayerId(id),
             tilemap: TilemapBundle {
                 grid_size: TILE_SIZE.into(),
                 size: CHUNK_SIZE.into(),

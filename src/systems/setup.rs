@@ -4,7 +4,8 @@ use bevy::prelude::*;
 use bevy_pixel_camera::*;
 use crate::bundles::gpt::GptBundle;
 use crate::bundles::player::PlayerBundle;
-use crate::components::flags::*;
+use crate::components::animation::IsGameCamera;
+use crate::components::characters::*;
 use crate::constants::characters::*;
 use crate::constants::display::*;
 

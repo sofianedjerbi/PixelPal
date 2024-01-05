@@ -1,63 +1,132 @@
 use bevy::prelude::*;
 use bevy::log;
 use bevy_ecs_tilemap::prelude::*;
+use rand::Rng;
 
-use crate::bundles::map::ChunkBundle;
+use crate::bundles::map::*;
 use crate::bundles::map::DataTileBundle;
 use crate::components::map::*;
-use crate::constants::mapping::*;
+use crate::constants::map::*;
+use crate::constants::textures::*;
 use crate::util::noise::TiledNoise;
 use crate::util::position::*;
 
 
 fn spawn_chunk(
     commands: &mut Commands,
-    asset_server: &AssetServer,
+    asset_server: &Res<AssetServer>,
     chunk_pos: IVec2,
-) -> Entity {
+) -> (Entity, Entity) {
     log::debug!("Spawning chunk: {}", chunk_pos);
-    let chunk_entity = commands.spawn_empty().id();
-    let mut tile_storage = TileStorage::empty(CHUNK_SIZE.into());
+    let noise = TiledNoise::new(0);
+    let texture = TilemapTexture::Single(
+        asset_server.load("tileset/environment/full.png")
+    );
+
+    spawn_layers(
+        commands,
+        texture.clone(),
+        chunk_pos,
+        &noise
+    )
+}
+
+fn spawn_layers(
+    commands: &mut Commands,
+    texture: TilemapTexture,
+    chunk_pos: IVec2,
+    noise: &TiledNoise
+) -> (Entity, Entity) {
+    let layer_entity_0 = commands.spawn_empty().id();
+    let layer_entity_1 = commands.spawn_empty().id();
+
+    let mut tile_storage_0 = TileStorage::empty(CHUNK_SIZE.into());
+    let mut tile_storage_1 = TileStorage::empty(CHUNK_SIZE.into());
 
     let base_x = chunk_pos.x as i32 * CHUNK_SIZE.x as i32;
     let base_y = chunk_pos.y as i32 * CHUNK_SIZE.y as i32;
-    let noise = TiledNoise::new(0);
 
     for x in 0..CHUNK_SIZE.x {
         for y in 0..CHUNK_SIZE.y {
             let tile_pos = TilePos { x, y };
-            let value = noise.get_value(base_x + x as i32 , base_y + y as i32);
-            let tile_bundle = DataTileBundle {
+            let level = noise.get_value(
+                base_x + x as i32 , 
+                base_y + y as i32
+            );
+            let mask = get_mask(
+                level,
+                noise,
+                x as i32 + base_x,
+                y as i32 + base_y
+            );
+            let id_0 = if mask == 0 {
+                get_random_tile_id(level)
+            } else {
+                get_random_tile_id(adjust_to_water_level(level))
+            };
+
+            let tile_bundle_0 = DataTileBundle {
                 tile: TileBundle {
                     position: tile_pos,
-                    texture_index: TileTextureIndex(value),
-                    tilemap_id: TilemapId(chunk_entity),
+                    texture_index: TileTextureIndex(id_0),
+                    tilemap_id: TilemapId(layer_entity_0),
                     ..Default::default()
                 },
-                level: ReliefLevel(value)
+                level: ReliefLevel(level)
             };
-            let tile_entity = commands.spawn(tile_bundle).id();
-            commands.entity(chunk_entity).add_child(tile_entity);
-            tile_storage.set(&tile_pos, tile_entity);
+
+            let tile_entity_0 = commands.spawn(tile_bundle_0).id();
+            commands.entity(layer_entity_0).add_child(tile_entity_0);
+            tile_storage_0.set(&tile_pos, tile_entity_0);
+
+            if mask != 0 {
+                let id_1 = mask_to_id(mask, level);
+                let tile_bundle_1 = DataTileBundle {
+                    tile: TileBundle {
+                        position: tile_pos,
+                        texture_index: TileTextureIndex(id_1),
+                        tilemap_id: TilemapId(layer_entity_1),
+                        ..Default::default()
+                    },
+                    level: ReliefLevel(level)
+                };
+                let tile_entity_1 = commands.spawn(tile_bundle_1).id();
+                commands.entity(layer_entity_1).add_child(tile_entity_1);
+                tile_storage_1.set(&tile_pos, tile_entity_1);
+            }
         }
     }
 
-    let transform = Transform::from_xyz(
+    let transform_0 = Transform::from_xyz(
         base_x as f32 * TILE,
         base_y as f32 * TILE,
         0.0,
     );
 
-    let texture_handle: Handle<Image> = asset_server.load("tileset/environment/debug.png");
-
-    let chunk = ChunkBundle::new(
-        tile_storage,
-        TilemapTexture::Single(texture_handle),
-        transform
+    let transform_1 = Transform::from_xyz(
+        base_x as f32 * TILE,
+        base_y as f32 * TILE,
+        1.0,
     );
-    commands.entity(chunk_entity).insert(chunk);
 
-    chunk_entity
+    let layer0 = Layer::new(
+        0,
+        tile_storage_0,
+        texture.clone(),
+        transform_0
+    );
+
+    let layer1 = Layer::new(
+        1,
+        tile_storage_1,
+        texture.clone(),
+        transform_1
+    );
+
+    commands.entity(layer_entity_0).insert(layer0);
+    commands.entity(layer_entity_1).insert(layer1);
+
+    (layer_entity_0, layer_entity_1)
 }
 
 pub fn handle_chunk_despawning(
@@ -69,7 +138,7 @@ pub fn handle_chunk_despawning(
         transform,
         mut chunk_map
     ) in loader_query.iter_mut() {
-        chunk_map.retain(|chunk_ipos, entity| {
+        chunk_map.retain(|chunk_ipos, (layer0, layer1)| {
             let chunk_pos = chunk_pos_to_pixel_pos(chunk_ipos);
             let distance = transform.translation.xy()
                 .distance_squared(chunk_pos);
@@ -77,10 +146,11 @@ pub fn handle_chunk_despawning(
             if distance < CHUNK_DESPAWN_RANGE_PX_SQUARED {
                 true // Keep the chunk
             } else {
-                commands.entity(*entity).despawn_recursive();
-                all_chunks.remove(chunk_ipos);
                 log::debug!("Despawning chunk: {}", chunk_ipos);
-                false // Remove the chunk
+                commands.entity(*layer0).despawn_recursive();
+                commands.entity(*layer1).despawn_recursive();
+                all_chunks.remove(chunk_ipos);
+                false // Despawn the chunk
             }
         });
     }
@@ -88,8 +158,8 @@ pub fn handle_chunk_despawning(
 
 pub fn handle_chunk_spawning(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     mut all_chunks: ResMut<ChunkMap>,
+    asset_server: Res<AssetServer>,
     mut loader_query: Query<(&Transform, &mut ChunkMap)>
 ) {
     for (
@@ -115,5 +185,48 @@ pub fn handle_chunk_spawning(
                 }
             }
         }
+    }
+}
+
+fn get_random_tile_id(level: u32) -> u32 {
+    let random_number = rand::thread_rng().gen_range(0..=1000);
+    let tile_probability_map = TEXTURE_RELIEF_IDS_MAP.get(&level).unwrap();
+    let mut keys_less_than_random: Vec<&u32> = tile_probability_map.keys().filter(
+        |&&key| key <= random_number
+    ).collect();
+    keys_less_than_random.sort();
+    let key = keys_less_than_random.last().unwrap();
+    *tile_probability_map.get(key).unwrap() + TEXTURE_ID_OFFSET_MAP[&level]
+}
+
+fn get_mask(value: u32, noise: &TiledNoise, x: i32, y: i32) -> u32 {
+    let got_n = noise.get_value(x, y + 1) < value;
+    let got_s = noise.get_value(x, y - 1) < value;
+    let got_e = noise.get_value(x + 1, y) < value;
+    let got_w = noise.get_value(x - 1, y) < value;
+    let got_nw = noise.get_value(x - 1, y + 1) < value;
+    let got_ne = noise.get_value(x + 1, y + 1) < value;
+    let got_sw = noise.get_value(x - 1, y - 1) < value;
+    let got_se = noise.get_value(x + 1, y - 1) < value;
+    0b000_0_0_000 
+        + if got_n { 0b010_0_0_000 } else { 0 }
+        + if got_s { 0b000_0_0_010 } else { 0 }
+        + if got_w { 0b000_1_0_000 } else { 0 }
+        + if got_e { 0b000_0_1_000 } else { 0 }
+        + if got_nw { 0b100_0_0_000 } else { 0 }
+        + if got_ne { 0b001_0_0_000 } else { 0 }
+        + if got_sw { 0b000_0_0_100 } else { 0 }
+        + if got_se { 0b000_0_0_001 } else { 0 }
+}
+
+fn mask_to_id(mask: u32, value: u32) -> u32 {
+    TEXTURE_CORNER_IDS_MAP[&mask] + TEXTURE_ID_OFFSET_MAP[&value]
+}
+
+fn adjust_to_water_level(n: u32) -> u32 {
+    match n {
+        n if n < WATER_LEVEL => n + 1,
+        n if n > WATER_LEVEL => n - 1,
+        _ => n,
     }
 }

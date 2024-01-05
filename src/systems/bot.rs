@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::components::flags::*;
+use crate::components::characters::*;
 use crate::components::gpt::GPTAgent;
 use crate::constants::bot::BOT_VIEW_DISTANCE;
 use crate::constants::sprites::PLAYER_SPRITE_SIZE;

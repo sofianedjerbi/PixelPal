@@ -34,3 +34,6 @@ impl AnimationFramesMap {
         self.0.get(action).unwrap()
     }
 }
+
+#[derive(Component)]
+pub struct IsGameCamera;
