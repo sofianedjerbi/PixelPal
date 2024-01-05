@@ -4,17 +4,20 @@ use crate::components::action::*;
 use super::map::TILE;
 
 pub const ACTION_TICK_FREQUENCY: Duration = Duration::from_millis(20);
-pub const WALKING_BPS: f32 = 1. * TILE;
+pub const WALK_RATE: f32 = 1. * TILE;
+pub const RUN_RATE: f32 = 1. * TILE;
+
 
 // PLAYER VALUES
 pub const PLAYER_ACTION_DEFAULT: Action = Action::new(
-    ActionKind::Standing,
-    ActionDirection::Down
+    ActionKind::Stand,
+    ActionDirection::Down,
 );
 
 pub const PLAYER_ACTION_DURATION_MAP: ActionDurationPHF = ActionDurationPHF(
     phf_map! {
-        "Standing" => 0.0,
-        "Walking" => 0.3,
+        "Stand" => 0.0,
+        "Walk" => 0.3,
+        "Run" => 0.2,
     }
 );

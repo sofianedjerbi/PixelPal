@@ -6,7 +6,7 @@ use serde::Deserialize;
 use std::str::FromStr;
 
 use crate::constants::map::TILE;
-use crate::constants::action::WALKING_BPS;
+use crate::constants::action::*;
 
 
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString)]
@@ -23,10 +23,12 @@ pub enum ActionDirection {
 
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString)]
 pub enum ActionKind {
-    #[strum(ascii_case_insensitive, serialize = "STAND", serialize = "Standing")]
-    Standing,
-    #[strum(ascii_case_insensitive, serialize = "WALK", serialize = "Walking")]
-    Walking,
+    #[strum(ascii_case_insensitive)]
+    Stand,
+    #[strum(ascii_case_insensitive)]
+    Walk,
+    #[strum(ascii_case_insensitive)]
+    Run,
     // Add future actions here
 }
 
@@ -46,7 +48,8 @@ impl Action {
 
     pub const fn get_transformation(&self) -> Vec3 {
         let norm = match self.kind {
-            ActionKind::Walking => WALKING_BPS as i32,
+            ActionKind::Walk => WALK_RATE as i32,
+            ActionKind::Run => RUN_RATE as i32,
             _ => 0 * TILE as i32,
         };
 
@@ -81,7 +84,7 @@ impl Action {
             return None;
         }
 
-        let kind = ActionKind::from_str(parts[0]).ok()?;
+        let mut kind = ActionKind::from_str(parts[0]).ok()?;
         let direction = ActionDirection::from_str(parts[1]).ok()?;
 
         let times = if parts.len() == 3 {
@@ -90,7 +93,10 @@ impl Action {
             1
         };
 
-        // Create the specified number of Action structs
+        if times > 5 && kind == ActionKind::Walk {
+            kind = ActionKind::Run
+        }
+
         Some(vec![Action { kind, direction }; times])
     }
 }

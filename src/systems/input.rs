@@ -24,18 +24,24 @@ pub fn handle_input(
     ) in query.iter_mut() {
         if **busy { return }
 
-        let new_state = 
-        match keyboard_input.get_pressed().next() {
-            Some(KeyCode::Q) =>
-                Some((ActionKind::Walking, ActionDirection::Left)),
-            Some(KeyCode::D) =>
-                Some((ActionKind::Walking, ActionDirection::Right)),
-            Some(KeyCode::Z) =>
-                Some((ActionKind::Walking, ActionDirection::Up)),
-            Some(KeyCode::S) =>
-                Some((ActionKind::Walking, ActionDirection::Down)),
-            _ => None,
+        let action_kind = if keyboard_input.pressed(KeyCode::ShiftLeft) 
+                                      || keyboard_input.pressed(KeyCode::ShiftRight) {
+            ActionKind::Run
+        } else {
+            ActionKind::Walk
         };
+        
+        let new_state = if keyboard_input.pressed(KeyCode::S) {
+            Some((action_kind, ActionDirection::Down))
+        } else if keyboard_input.pressed(KeyCode::Z) {
+            Some((action_kind, ActionDirection::Up))
+        } else if keyboard_input.pressed(KeyCode::Q) {
+            Some((action_kind, ActionDirection::Left))
+        } else if keyboard_input.pressed(KeyCode::D) {
+            Some((action_kind, ActionDirection::Right))
+        } else {
+            None
+        };        
 
         if let Some((
             kind,

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy::log;
 use bevy_ecs_tilemap::prelude::*;
+use once_cell::sync::Lazy;
 use rand::Rng;
 
 use crate::bundles::map::*;
@@ -12,13 +13,14 @@ use crate::util::noise::TiledNoise;
 use crate::util::position::*;
 
 
+static NOISE: Lazy<TiledNoise> = Lazy::new(|| TiledNoise::new(0));
+
 fn spawn_chunk(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     chunk_pos: IVec2,
 ) -> (Entity, Entity) {
     log::debug!("Spawning chunk: {}", chunk_pos);
-    let noise = TiledNoise::new(0);
     let texture = TilemapTexture::Single(
         asset_server.load("tileset/environment/full.png")
     );
@@ -26,8 +28,7 @@ fn spawn_chunk(
     spawn_layers(
         commands,
         texture.clone(),
-        chunk_pos,
-        &noise
+        chunk_pos
     )
 }
 
@@ -35,7 +36,6 @@ fn spawn_layers(
     commands: &mut Commands,
     texture: TilemapTexture,
     chunk_pos: IVec2,
-    noise: &TiledNoise
 ) -> (Entity, Entity) {
     let layer_entity_0 = commands.spawn_empty().id();
     let layer_entity_1 = commands.spawn_empty().id();
@@ -49,13 +49,12 @@ fn spawn_layers(
     for x in 0..CHUNK_SIZE.x {
         for y in 0..CHUNK_SIZE.y {
             let tile_pos = TilePos { x, y };
-            let level = noise.get_value(
+            let level = NOISE.get_value(
                 base_x + x as i32 , 
                 base_y + y as i32
             );
             let mask = get_mask(
                 level,
-                noise,
                 x as i32 + base_x,
                 y as i32 + base_y
             );
@@ -204,7 +203,7 @@ fn compare_relative_to_water(
     sample: u32,
     layer: u32
 ) -> bool {
-    match layer - adjust_to_water_level(layer) {
+    match adjust_to_water_level(layer) {
         n if n < layer => sample < layer,
         n if n > layer => sample > layer,
         _ => false
@@ -212,15 +211,31 @@ fn compare_relative_to_water(
 }
 
 
-fn get_mask(value: u32, noise: &TiledNoise, x: i32, y: i32) -> u32 {
-    let got_n = compare_relative_to_water(noise.get_value(x, y + 1), value);
-    let got_s = compare_relative_to_water(noise.get_value(x, y - 1), value);
-    let got_e = compare_relative_to_water(noise.get_value(x + 1, y), value);
-    let got_w = compare_relative_to_water(noise.get_value(x - 1, y), value);
-    let got_nw = compare_relative_to_water(noise.get_value(x - 1, y + 1), value);
-    let got_ne = compare_relative_to_water(noise.get_value(x + 1, y + 1), value);
-    let got_sw = compare_relative_to_water(noise.get_value(x - 1, y - 1), value);
-    let got_se = compare_relative_to_water(noise.get_value(x + 1, y - 1), value);
+fn get_mask(value: u32,x: i32, y: i32) -> u32 {
+    let got_n = compare_relative_to_water(
+        NOISE.get_value(x, y + 1), value
+    );
+    let got_s = compare_relative_to_water(
+        NOISE.get_value(x, y - 1), value
+    );
+    let got_e = compare_relative_to_water(
+        NOISE.get_value(x + 1, y), value
+    );
+    let got_w = compare_relative_to_water(
+        NOISE.get_value(x - 1, y), value
+    );
+    let got_nw = compare_relative_to_water(
+        NOISE.get_value(x - 1, y + 1), value
+    );
+    let got_ne = compare_relative_to_water(
+        NOISE.get_value(x + 1, y + 1), value
+    );
+    let got_sw = compare_relative_to_water(
+        NOISE.get_value(x - 1, y - 1), value
+    );
+    let got_se = compare_relative_to_water(
+        NOISE.get_value(x + 1, y - 1), value
+    );
 
     0b000_0_0_000 
         + if got_n { 0b010_0_0_000 } else { 0 }

@@ -1,4 +1,5 @@
 pub const NOISE_ZOOM: f64 = 200.;
+pub const CACHE_SIZE: usize = 10000;
 pub const SAMPLE_NUMBER: usize = 1;
 /**
  * 0: grass 
