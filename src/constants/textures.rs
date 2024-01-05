@@ -10,51 +10,51 @@ pub const WATER_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
 
 pub const GRASS_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
     phf_map! {
-        0u32 => 55,  // At least 15 units
+        0u32 => 55,   // At least 15 units
         15u32 => 56,  // At least 15 units
         30u32 => 57,  // At least 15 units
-        45u32 => 58, // Adjusted proportionally
-        50u32 => 59, // Adjusted proportionally
-        55u32 => 60, // Adjusted proportionally
-        60u32 => 66, // At least 15 units
-        75u32 => 67, // At least 15 units
-        90u32 => 68, // At least 15 units
-        95u32 => 69, // Adjusted proportionally
-        97u32 => 70, // Adjusted proportionally
-        99u32 => 71, // Adjusted proportionally
+        45u32 => 58,  // Adjusted proportionally
+        50u32 => 59,  // Adjusted proportionally
+        55u32 => 60,  // Adjusted proportionally
+        60u32 => 66,  // At least 15 units
+        75u32 => 67,  // At least 15 units
+        90u32 => 68,  // At least 15 units
+        95u32 => 69,  // Adjusted proportionally
+        97u32 => 70,  // Adjusted proportionally
+        99u32 => 71,  // Adjusted proportionally
         100u32 => 12, // 90%
     }
 );
 
 pub const DARKER_GRASS_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
     phf_map! {
-        0u32 => 55,  // At least 15 units
+        0u32 => 55,   // At least 15 units
         15u32 => 56,  // At least 15 units
         30u32 => 57,  // At least 15 units
-        45u32 => 58, // Adjusted proportionally
-        50u32 => 59, // Adjusted proportionally
-        55u32 => 60, // Adjusted proportionally
-        60u32 => 66, // At least 15 units
-        75u32 => 67, // At least 15 units
-        90u32 => 68, // At least 15 units
-        95u32 => 69, // Adjusted proportionally
-        97u32 => 70, // Adjusted proportionally
-        99u32 => 71, // Adjusted proportionally
+        45u32 => 58,  // Adjusted proportionally
+        50u32 => 59,  // Adjusted proportionally
+        55u32 => 60,  // Adjusted proportionally
+        60u32 => 66,  // At least 15 units
+        75u32 => 67,  // At least 15 units
+        90u32 => 68,  // At least 15 units
+        95u32 => 69,  // Adjusted proportionally
+        97u32 => 70,  // Adjusted proportionally
+        99u32 => 71,  // Adjusted proportionally
         100u32 => 12, // 90%
     }
 );
 
 pub const SOIL_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
     phf_map! {
-        0u32 => 55,  // 14.89 (rounded to 15)
-        15u32 => 56, // 14.89 (rounded to 15)
-        30u32 => 57, // 14.89 (rounded to 15)
-        45u32 => 58, // 2.96 (rounded to 3)
-        48u32 => 59, // 4.46 (rounded to 4)
-        52u32 => 66, // 14.89 (rounded to 15)
-        67u32 => 67, // 14.89 (rounded to 15)
-        82u32 => 68, // 14.89 (rounded to 15)
-        97u32 => 69, // 2.96 (rounded to 3)
+        0u32 => 55,   // 14.89 (rounded to 15)
+        15u32 => 56,  // 14.89 (rounded to 15)
+        30u32 => 57,  // 14.89 (rounded to 15)
+        45u32 => 58,  // 2.96 (rounded to 3)
+        48u32 => 59,  // 4.46 (rounded to 4)
+        52u32 => 66,  // 14.89 (rounded to 15)
+        67u32 => 67,  // 14.89 (rounded to 15)
+        82u32 => 68,  // 14.89 (rounded to 15)
+        97u32 => 69,  // 2.96 (rounded to 3)
         100u32 => 70, // 4.46 (rounded to 4)
         104u32 => 12, // 90% of 1000 (keys 100 to 1000)
     }
@@ -152,16 +152,35 @@ pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
         0b111_1_0_001u32 => 4,
         0b011_1_0_101u32 => 4,
         0b011_1_0_001u32 => 4,
+        0b110_1_0_101u32 => 4,
+        0b110_1_0_001u32 => 4,
+        0b010_1_0_101u32 => 4,
+        0b010_1_0_001u32 => 4,
 
         0b111_0_0_001u32 => 5,
+        0b110_0_0_001u32 => 5,
+        0b011_0_0_001u32 => 5,
+        0b010_0_0_001u32 => 5,
+
         0b111_0_0_100u32 => 6,
+        0b011_0_0_100u32 => 6,
+        0b110_0_0_100u32 => 6,
+        0b010_0_0_100u32 => 6,
 
         0b111_0_1_101u32 => 7,
         0b111_0_1_100u32 => 7,
         0b110_0_1_101u32 => 7,
         0b110_0_1_100u32 => 7,
+        0b011_0_1_101u32 => 7,
+        0b011_0_1_100u32 => 7,
+        0b010_0_1_101u32 => 7,
+        0b010_0_1_100u32 => 7,
 
         0b111_0_0_101u32 => 8,
+        0b110_0_0_101u32 => 8,
+        0b011_0_0_101u32 => 8,
+        0b010_0_0_101u32 => 8,
+
         0b001_0_0_100u32 => 9,
 
         0b100_1_0_100u32 => 11,
@@ -177,10 +196,35 @@ pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
         0b000_0_1_000u32 => 13,
 
         0b101_1_1_101u32 => 14,
+        0b101_1_1_100u32 => 14,
+        0b101_1_1_001u32 => 14,
+        0b101_1_1_000u32 => 14,
+        0b001_1_1_101u32 => 14,
+        0b001_1_1_100u32 => 14,
+        0b001_1_1_001u32 => 14,
+        0b001_1_1_000u32 => 14,
+        0b100_1_1_101u32 => 14,
+        0b100_1_1_100u32 => 14,
+        0b100_1_1_001u32 => 14,
+        0b100_1_1_000u32 => 14,
+        0b000_1_1_101u32 => 14,
+        0b000_1_1_100u32 => 14,
+        0b000_1_1_001u32 => 14,
+        0b000_1_1_000u32 => 14,
+
         0b100_1_0_101u32 => 15,
+        0b000_1_0_101u32 => 15,
+        0b100_1_0_001u32 => 15,
+        0b000_1_0_001u32 => 15,
+
         0b000_0_0_001u32 => 16,
         0b000_0_0_100u32 => 17,
+
         0b001_0_1_101u32 => 18,
+        0b001_0_1_100u32 => 18,
+        0b000_0_1_101u32 => 18,
+        0b000_0_1_100u32 => 18,
+
         0b000_0_0_101u32 => 19,
         0b100_0_0_001u32 => 20,
 
@@ -225,9 +269,18 @@ pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
         0b000_1_1_010u32 => 25,
 
         0b101_1_0_100u32 => 26,
+        0b101_1_0_000u32 => 26,
+        0b001_1_0_100u32 => 26,
+        0b001_1_0_000u32 => 26,
+
         0b001_0_0_000u32 => 27,
         0b100_0_0_000u32 => 28,
+
         0b101_0_1_001u32 => 29,
+        0b101_0_1_000u32 => 29,
+        0b100_0_1_001u32 => 29,
+        0b100_0_1_000u32 => 29,
+
         0b101_0_0_000u32 => 30,
         0b101_0_0_100u32 => 31,
         0b101_0_0_001u32 => 32,
@@ -250,6 +303,21 @@ pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
         0b010_1_0_010u32 => 33,
 
         0b111_0_0_111u32 => 34,
+        0b111_0_0_110u32 => 34,
+        0b111_0_0_011u32 => 34,
+        0b111_0_0_010u32 => 34,
+        0b110_0_0_111u32 => 34,
+        0b110_0_0_110u32 => 34,
+        0b110_0_0_011u32 => 34,
+        0b110_0_0_010u32 => 34,
+        0b011_0_0_111u32 => 34,
+        0b011_0_0_110u32 => 34,
+        0b011_0_0_011u32 => 34,
+        0b011_0_0_010u32 => 34,
+        0b010_0_0_111u32 => 34,
+        0b010_0_0_110u32 => 34,
+        0b010_0_0_011u32 => 34,
+        0b010_0_0_010u32 => 34,
 
         0b111_0_1_111u32 => 35,
         0b011_0_1_111u32 => 35,
@@ -289,22 +357,52 @@ pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
         0b001_1_0_111u32 => 37,
         0b101_1_0_011u32 => 37,
         0b001_1_0_011u32 => 37,
+        0b101_1_0_110u32 => 37,
+        0b001_1_0_110u32 => 37,
+        0b101_1_0_010u32 => 37,
+        0b001_1_0_010u32 => 37,
+
 
         0b001_0_0_111u32 => 38,
+        0b001_0_0_110u32 => 38,
+        0b001_0_0_011u32 => 38,
+        0b001_0_0_010u32 => 38,
+
         0b100_0_0_111u32 => 39,
+        0b100_0_0_110u32 => 39,
+        0b100_0_0_011u32 => 39,
+        0b100_0_0_010u32 => 39,
 
         0b101_0_1_111u32 => 40,
         0b100_0_1_111u32 => 40,
         0b101_0_1_110u32 => 40,
         0b100_0_1_110u32 => 40,
+        0b101_0_1_011u32 => 40,
+        0b100_0_1_011u32 => 40,
+        0b101_0_1_010u32 => 40,
+        0b100_0_1_010u32 => 40,
 
         0b101_0_0_111u32 => 41,
+        0b101_0_0_011u32 => 41,
+        0b101_0_0_110u32 => 41,
+        0b101_0_0_010u32 => 41,
+
         0b100_0_0_101u32 => 42,
         0b001_0_0_101u32 => 43,
+
         0b101_1_0_101u32 => 48,
+        0b001_1_0_101u32 => 48,
+        0b101_1_0_001u32 => 48,
+        0b001_1_0_001u32 => 48,
+
         0b001_0_0_001u32 => 49,
         0b100_0_0_100u32 => 50,
+
         0b101_0_1_101u32 => 51,
+        0b100_0_1_101u32 => 51,
+        0b101_0_1_100u32 => 51,
+        0b100_0_1_100u32 => 51,
+
         0b101_0_0_101u32 => 52,
     }
 );

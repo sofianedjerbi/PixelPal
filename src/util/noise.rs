@@ -1,15 +1,15 @@
-use noise::{NoiseFn, Perlin, Seedable};
+use noise::{NoiseFn, Perlin, Seedable, Fbm};
 use crate::constants::generation::*;
 
 
 const _TOTAL_SAMPLE: f64 = SAMPLE_NUMBER as f64 * SAMPLE_NUMBER as f64;
 
-pub struct TiledNoise(Perlin);
+pub struct TiledNoise(Fbm<Perlin>);
 
 impl TiledNoise {
     // Initialize with a given seed
     pub fn new(seed: u32) -> Self {
-        let mut noise = Perlin::new(seed);
+        let mut noise = Fbm::<Perlin>::default();
         noise = noise.set_seed(seed);
         TiledNoise(noise)
     }
@@ -32,11 +32,11 @@ impl TiledNoise {
         }
 
         // Calculate and return the mean noise value
-        let mean_noise = total_noise / _TOTAL_SAMPLE + 1.;
+        let mean_noise = (total_noise / _TOTAL_SAMPLE + 1.).clamp(0., 2.);
         for (i, &value) in LAYER_RANGE.iter().enumerate() {
             if i + 1 == LAYER_RANGE.len()
               || (mean_noise >= value 
-              && mean_noise < LAYER_RANGE[i + 1]) {
+              && mean_noise <= LAYER_RANGE[i + 1]) {
                 return i as u32
             }
         }

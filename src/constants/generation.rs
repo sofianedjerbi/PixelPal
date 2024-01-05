@@ -1,5 +1,5 @@
-pub const NOISE_ZOOM: f64 = 120.;
-pub const SAMPLE_NUMBER: usize = 2;
+pub const NOISE_ZOOM: f64 = 200.;
+pub const SAMPLE_NUMBER: usize = 1;
 /**
  * 0: grass 
  * 1: soil

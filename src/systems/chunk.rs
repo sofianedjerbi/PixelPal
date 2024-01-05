@@ -199,15 +199,29 @@ fn get_random_tile_id(level: u32) -> u32 {
     *tile_probability_map.get(key).unwrap() + TEXTURE_ID_OFFSET_MAP[&level]
 }
 
+
+fn compare_relative_to_water(
+    sample: u32,
+    layer: u32
+) -> bool {
+    match layer - adjust_to_water_level(layer) {
+        n if n < layer => sample < layer,
+        n if n > layer => sample > layer,
+        _ => false
+    }
+}
+
+
 fn get_mask(value: u32, noise: &TiledNoise, x: i32, y: i32) -> u32 {
-    let got_n = noise.get_value(x, y + 1) < value;
-    let got_s = noise.get_value(x, y - 1) < value;
-    let got_e = noise.get_value(x + 1, y) < value;
-    let got_w = noise.get_value(x - 1, y) < value;
-    let got_nw = noise.get_value(x - 1, y + 1) < value;
-    let got_ne = noise.get_value(x + 1, y + 1) < value;
-    let got_sw = noise.get_value(x - 1, y - 1) < value;
-    let got_se = noise.get_value(x + 1, y - 1) < value;
+    let got_n = compare_relative_to_water(noise.get_value(x, y + 1), value);
+    let got_s = compare_relative_to_water(noise.get_value(x, y - 1), value);
+    let got_e = compare_relative_to_water(noise.get_value(x + 1, y), value);
+    let got_w = compare_relative_to_water(noise.get_value(x - 1, y), value);
+    let got_nw = compare_relative_to_water(noise.get_value(x - 1, y + 1), value);
+    let got_ne = compare_relative_to_water(noise.get_value(x + 1, y + 1), value);
+    let got_sw = compare_relative_to_water(noise.get_value(x - 1, y - 1), value);
+    let got_se = compare_relative_to_water(noise.get_value(x + 1, y - 1), value);
+
     0b000_0_0_000 
         + if got_n { 0b010_0_0_000 } else { 0 }
         + if got_s { 0b000_0_0_010 } else { 0 }
