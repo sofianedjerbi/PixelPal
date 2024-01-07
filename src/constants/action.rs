@@ -1,11 +1,10 @@
 use std::time::Duration;
 use phf::phf_map;
 use crate::components::action::*;
-use super::map::TILE;
 
 pub const ACTION_TICK_FREQUENCY: Duration = Duration::from_millis(20);
-pub const WALK_RATE: f32 = 1. * TILE;
-pub const RUN_RATE: f32 = 1. * TILE;
+pub const WALK_RATE: f32 = 1.;
+pub const RUN_RATE: f32 = 1.;
 
 
 // PLAYER VALUES

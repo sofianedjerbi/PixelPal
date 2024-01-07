@@ -47,21 +47,29 @@ impl Action {
     }
 
     pub const fn get_transformation(&self) -> Vec3 {
+        let i_vector = self.get_raw_transformation();
+        let vector = Vec2::new(
+            (i_vector.x * TILE as i32) as f32, 
+            (i_vector.y * TILE as i32) as f32
+        );
+        Vec3::new(vector.x, vector.y, 0.)
+    }
+
+    pub const fn get_raw_transformation(&self) -> IVec2 {
         let norm = match self.kind {
             ActionKind::Walk => WALK_RATE as i32,
             ActionKind::Run => RUN_RATE as i32,
-            _ => 0 * TILE as i32,
-        };
+            _ => 0 as i32,
+        } as i32;
 
-        let vector = match self.direction {
-            ActionDirection::Up => Vec2::new(0., norm as f32),
-            ActionDirection::Down => Vec2::new(0., -norm as f32),
-            ActionDirection::Left => Vec2::new(-norm as f32, 0.),
-            ActionDirection::Right => Vec2::new(norm as f32, 0.),
-        };
-
-        Vec3::new(vector.x, vector.y, 0.)
+        match self.direction {
+            ActionDirection::Up => IVec2::new(0, norm),
+            ActionDirection::Down => IVec2::new(0, -norm),
+            ActionDirection::Left => IVec2::new(-norm, 0),
+            ActionDirection::Right => IVec2::new(norm, 0),
+        }
     }
+
 
     pub fn from_command_string(commands: &str) -> Option<Vec<Action>> {
         let uppercase = commands.to_uppercase();

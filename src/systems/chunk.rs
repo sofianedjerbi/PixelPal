@@ -31,6 +31,7 @@ static NOISE: Lazy<TiledNoise> = Lazy::new(|| {
     )
 });
 
+
 fn spawn_chunk_base(
     commands: &mut Commands,
     thread_pool: &AsyncComputeTaskPool,
@@ -62,15 +63,38 @@ fn spawn_chunk_base(
                 for y in 0..CHUNK_SIZE.y {
                     let tile_pos = TilePos { x, y };
                     let level = NOISE.get_value(
-                        base_x + x as i32 , 
+                        base_x + x as i32, 
                         base_y + y as i32
                     );
+                    /*let transform_text = Transform::from_xyz(
+                        (base_x + x as i32) as f32 * TILE,
+                        (base_y + y as i32) as f32 * TILE,
+                        10.0,
+                    );
+
+                    world.spawn(Text2dBundle {
+                        text: Text { 
+                            sections: vec![TextSection {
+                                value: format!("{}", level),
+                                style: TextStyle {
+                                    font_size: 11.,
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            }],
+                            alignment:TextAlignment::Center,
+                            ..Default::default()
+                        },
+                        transform: transform_text,
+                        ..Default::default()
+                    });*/
                     let mask = get_mask(
                         level,
-                        x as i32 + base_x,
-                        y as i32 + base_y
+                        base_x + x as i32,
+                        base_y + y as i32
                     );
-                    let id_0 = if mask == 0 {
+                    let is_edge = mask != 0;
+                    let id_0 = if !is_edge {
                         get_random_tile_id(level)
                     } else {
                         get_random_tile_id(adjust_to_water_level(level))
@@ -90,7 +114,7 @@ fn spawn_chunk_base(
                     world.entity_mut(layer_entity_0).add_child(tile_entity_0);
                     tile_storage_0.set(&tile_pos, tile_entity_0);
 
-                    if mask != 0 {
+                    if is_edge {
                         let id_1 = mask_to_id(mask, level);
                         let tile_bundle_1 = DataTileBundle {
                             tile: TileBundle {

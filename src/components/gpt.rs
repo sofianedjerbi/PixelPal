@@ -32,11 +32,11 @@ impl GPTConversation {
             return None;
         }
 
-        log::info!("Sending:\n{}", message);
+        log::debug!("Sending:\n{}", message);
         let actions = match self.client.send_message(message).await {
             Ok(response) => {
                 let response_txt = &response.message().content;
-                log::info!("Received:\n{}", &response_txt);
+                log::debug!("Received:\n{}", &response_txt);
                 Action::from_command_string(&response_txt)
             },
             Err(e) => {
@@ -63,7 +63,7 @@ impl GPTConversation {
         &mut self,
         message: String
     ) {
-        log::info!("Adding to context:\n\"{}\"", message);
+        log::debug!("Adding to context:\n\"{}\"", message);
         self.history.push(message);
     }
 }

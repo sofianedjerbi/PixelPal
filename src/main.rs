@@ -1,3 +1,4 @@
+use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
@@ -25,7 +26,7 @@ fn main(){
             DefaultPlugins
             .set(ImagePlugin::default_nearest())
             .set(LogPlugin {
-                filter: "info,wgpu_core=warn,wgpu_hal=warn,test=debug".into(),
+                filter: "info,wgpu_core=warn,wgpu_hal=warn,test=info".into(),
                 level: bevy::log::Level::DEBUG,
             })
             .set(WindowPlugin {
@@ -36,7 +37,9 @@ fn main(){
                 ..default()
             }),
         )
+        .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(PixelCameraPlugin)
+        .add_plugins(LogDiagnosticsPlugin::default())
         .insert_resource(TilemapRenderSettings {
             render_chunk_size: RENDER_CHUNK_SIZE,
             ..Default::default()
@@ -50,7 +53,7 @@ fn main(){
         .add_systems(Update, systems::chunk::fetch_chunk_tasks)
         .add_systems(Update, systems::chunk::handle_chunk_despawning)
         .add_systems(Update, systems::animation::animate_sprite)
-        .add_systems(Update, systems::bot::send_map_to_bot)
+        .add_systems(Update, systems::bot::query_bot)
         .add_systems(
             Update,
             systems::movement::move_characters

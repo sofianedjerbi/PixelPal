@@ -9,7 +9,6 @@ pub struct DataTileBundle {
     pub level: ReliefLevel
 }
 
-
 #[derive(Bundle, Clone)]
 pub struct Layer{
     pub id: LayerId,

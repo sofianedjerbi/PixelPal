@@ -22,3 +22,6 @@ pub struct TextureCornerIDsPHF(
     pub Map<u32, u32>
 );
 
+#[derive(Component, DerefMut, Deref)]
+pub struct TilesetOffset(pub Vec2);
+
