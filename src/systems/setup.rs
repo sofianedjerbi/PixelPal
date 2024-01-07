@@ -6,14 +6,21 @@ use crate::bundles::gpt::GptBundle;
 use crate::bundles::player::PlayerBundle;
 use crate::components::animation::IsGameCamera;
 use crate::components::characters::*;
+use crate::components::map::MainTilemapTexture;
 use crate::constants::characters::*;
 use crate::constants::display::*;
 
 pub fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut main_texture: ResMut<MainTilemapTexture>,
     mut textures: ResMut<Assets<TextureAtlas>>
  ) {
+    // Load tileset
+    main_texture.set_handle(
+        asset_server.load("tileset/environment/full.png")
+    );
+
     // Spawn the camera
     commands.spawn((
         Camera2dBundle {

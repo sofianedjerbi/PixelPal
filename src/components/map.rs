@@ -2,7 +2,25 @@ use std::fmt;
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use bevy_ecs_tilemap::map::TilemapTexture;
 
+
+#[derive(Resource, Deref, DerefMut)]
+pub struct MainTilemapTexture(Option<TilemapTexture>);
+
+impl MainTilemapTexture {
+    pub fn default() -> Self {
+        Self(None)
+    }
+
+    pub fn set_handle(&mut self, image: Handle<Image>) {
+        self.0 = Some(TilemapTexture::Single(image));
+    }
+
+    pub fn get(&self) -> TilemapTexture {
+        self.0.clone().unwrap()
+    }
+}
 
 #[derive(Component, Deref)]
 pub struct ReliefLevel(pub u32);

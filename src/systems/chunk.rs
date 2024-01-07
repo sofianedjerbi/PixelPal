@@ -1,131 +1,149 @@
+use bevy::ecs::system::CommandQueue;
 use bevy::prelude::*;
 use bevy::log;
+use bevy::tasks::AsyncComputeTaskPool;
+use bevy::tasks::block_on;
 use bevy_ecs_tilemap::prelude::*;
+use futures_lite::future::poll_once;
 use once_cell::sync::Lazy;
 use rand::Rng;
 
 use crate::bundles::map::*;
 use crate::bundles::map::DataTileBundle;
 use crate::components::map::*;
+use crate::constants::generation::CACHE_SIZE;
+use crate::constants::generation::LAYER_RANGE;
+use crate::constants::generation::NOISE_ZOOM;
+use crate::constants::generation::SAMPLE_NUMBER;
 use crate::constants::map::*;
 use crate::constants::textures::*;
 use crate::util::noise::TiledNoise;
 use crate::util::position::*;
 
 
-static NOISE: Lazy<TiledNoise> = Lazy::new(|| TiledNoise::new(0));
-
-fn spawn_chunk(
-    commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
-    chunk_pos: IVec2,
-) -> (Entity, Entity) {
-    log::debug!("Spawning chunk: {}", chunk_pos);
-    let texture = TilemapTexture::Single(
-        asset_server.load("tileset/environment/full.png")
-    );
-
-    spawn_layers(
-        commands,
-        texture.clone(),
-        chunk_pos
+static NOISE: Lazy<TiledNoise> = Lazy::new(|| {
+    TiledNoise::new(
+        0,
+        LAYER_RANGE.to_vec(),
+        NOISE_ZOOM,
+        SAMPLE_NUMBER,
+        CACHE_SIZE
     )
-}
+});
 
-fn spawn_layers(
+fn spawn_chunk_base(
     commands: &mut Commands,
+    thread_pool: &AsyncComputeTaskPool,
     texture: TilemapTexture,
     chunk_pos: IVec2,
-) -> (Entity, Entity) {
+    all_chunks: &mut ResMut<ChunkMap>,
+    player_chunk_map: &mut Mut<'_, ChunkMap>,
+) {
+    log::debug!("Spawning chunk: {}", chunk_pos);
+
     let layer_entity_0 = commands.spawn_empty().id();
     let layer_entity_1 = commands.spawn_empty().id();
 
-    let mut tile_storage_0 = TileStorage::empty(CHUNK_SIZE.into());
-    let mut tile_storage_1 = TileStorage::empty(CHUNK_SIZE.into());
+    let task = thread_pool.spawn(async move {
+        let mut command_queue = CommandQueue::default();
 
-    let base_x = chunk_pos.x as i32 * CHUNK_SIZE.x as i32;
-    let base_y = chunk_pos.y as i32 * CHUNK_SIZE.y as i32;
-
-    for x in 0..CHUNK_SIZE.x {
-        for y in 0..CHUNK_SIZE.y {
-            let tile_pos = TilePos { x, y };
-            let level = NOISE.get_value(
-                base_x + x as i32 , 
-                base_y + y as i32
+        command_queue.push(move |world: &mut World| {
+            let mut tile_storage_0 = TileStorage::empty(
+                CHUNK_SIZE.into()
             );
-            let mask = get_mask(
-                level,
-                x as i32 + base_x,
-                y as i32 + base_y
+            let mut tile_storage_1 = TileStorage::empty(
+                CHUNK_SIZE.into()
             );
-            let id_0 = if mask == 0 {
-                get_random_tile_id(level)
-            } else {
-                get_random_tile_id(adjust_to_water_level(level))
-            };
 
-            let tile_bundle_0 = DataTileBundle {
-                tile: TileBundle {
-                    position: tile_pos,
-                    texture_index: TileTextureIndex(id_0),
-                    tilemap_id: TilemapId(layer_entity_0),
-                    ..Default::default()
-                },
-                level: ReliefLevel(level)
-            };
+            let base_x = chunk_pos.x as i32 * CHUNK_SIZE.x as i32;
+            let base_y = chunk_pos.y as i32 * CHUNK_SIZE.y as i32;
 
-            let tile_entity_0 = commands.spawn(tile_bundle_0).id();
-            commands.entity(layer_entity_0).add_child(tile_entity_0);
-            tile_storage_0.set(&tile_pos, tile_entity_0);
+            for x in 0..CHUNK_SIZE.x {
+                for y in 0..CHUNK_SIZE.y {
+                    let tile_pos = TilePos { x, y };
+                    let level = NOISE.get_value(
+                        base_x + x as i32 , 
+                        base_y + y as i32
+                    );
+                    let mask = get_mask(
+                        level,
+                        x as i32 + base_x,
+                        y as i32 + base_y
+                    );
+                    let id_0 = if mask == 0 {
+                        get_random_tile_id(level)
+                    } else {
+                        get_random_tile_id(adjust_to_water_level(level))
+                    };
 
-            if mask != 0 {
-                let id_1 = mask_to_id(mask, level);
-                let tile_bundle_1 = DataTileBundle {
-                    tile: TileBundle {
-                        position: tile_pos,
-                        texture_index: TileTextureIndex(id_1),
-                        tilemap_id: TilemapId(layer_entity_1),
-                        ..Default::default()
-                    },
-                    level: ReliefLevel(level)
-                };
-                let tile_entity_1 = commands.spawn(tile_bundle_1).id();
-                commands.entity(layer_entity_1).add_child(tile_entity_1);
-                tile_storage_1.set(&tile_pos, tile_entity_1);
+                    let tile_bundle_0 = DataTileBundle {
+                        tile: TileBundle {
+                            position: tile_pos,
+                            texture_index: TileTextureIndex(id_0),
+                            tilemap_id: TilemapId(layer_entity_0),
+                            ..Default::default()
+                        },
+                        level: ReliefLevel(level)
+                    };
+
+                    let tile_entity_0 = world.spawn(tile_bundle_0).id();
+                    world.entity_mut(layer_entity_0).add_child(tile_entity_0);
+                    tile_storage_0.set(&tile_pos, tile_entity_0);
+
+                    if mask != 0 {
+                        let id_1 = mask_to_id(mask, level);
+                        let tile_bundle_1 = DataTileBundle {
+                            tile: TileBundle {
+                                position: tile_pos,
+                                texture_index: TileTextureIndex(id_1),
+                                tilemap_id: TilemapId(layer_entity_1),
+                                ..Default::default()
+                            },
+                            level: ReliefLevel(level)
+                        };
+                        let tile_entity_1 = world.spawn(tile_bundle_1).id();
+                        world.entity_mut(layer_entity_1).add_child(tile_entity_1);
+                        tile_storage_1.set(&tile_pos, tile_entity_1);
+                    }
+                }
             }
-        }
-    }
 
-    let transform_0 = Transform::from_xyz(
-        base_x as f32 * TILE,
-        base_y as f32 * TILE,
-        0.0,
-    );
+            let transform_0 = Transform::from_xyz(
+                base_x as f32 * TILE,
+                base_y as f32 * TILE,
+                0.0,
+            );
 
-    let transform_1 = Transform::from_xyz(
-        base_x as f32 * TILE,
-        base_y as f32 * TILE,
-        1.0,
-    );
+            let transform_1 = Transform::from_xyz(
+                base_x as f32 * TILE,
+                base_y as f32 * TILE,
+                1.0,
+            );
 
-    let layer0 = Layer::new(
-        0,
-        tile_storage_0,
-        texture.clone(),
-        transform_0
-    );
+            let layer0 = Layer::new(
+                0,
+                tile_storage_0,
+                texture.clone(),
+                transform_0
+            );
 
-    let layer1 = Layer::new(
-        1,
-        tile_storage_1,
-        texture.clone(),
-        transform_1
-    );
+            let layer1 = Layer::new(
+                1,
+                tile_storage_1,
+                texture.clone(),
+                transform_1
+            );
 
-    commands.entity(layer_entity_0).insert(layer0);
-    commands.entity(layer_entity_1).insert(layer1);
+            world.entity_mut(layer_entity_0).insert(layer0);
+            world.entity_mut(layer_entity_1).insert(layer1);
+        });
 
-    (layer_entity_0, layer_entity_1)
+        command_queue
+    });
+
+    commands.spawn_empty().insert(ChunkTask(task));
+    all_chunks.insert(chunk_pos, (layer_entity_0, layer_entity_1));
+    player_chunk_map.insert(chunk_pos, (layer_entity_0, layer_entity_1));
 }
 
 pub fn handle_chunk_despawning(
@@ -155,15 +173,30 @@ pub fn handle_chunk_despawning(
     }
 }
 
-pub fn handle_chunk_spawning(
+pub fn fetch_chunk_tasks(
+    mut commands: Commands,
+    mut transform_tasks: Query<(Entity, &mut ChunkTask)>
+) {
+    for (entity, mut task) in &mut transform_tasks {
+        if let Some(mut queue) = block_on(poll_once(&mut task.0)) {
+            commands.add(move |world: &mut World| {
+                queue.apply(world);
+            });
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
+pub fn create_chunk_tasks(
     mut commands: Commands,
     mut all_chunks: ResMut<ChunkMap>,
-    asset_server: Res<AssetServer>,
+    texture: Res<MainTilemapTexture>,
     mut loader_query: Query<(&Transform, &mut ChunkMap)>
 ) {
+    let thread_pool = AsyncComputeTaskPool::get();
     for (
         transform,
-        mut chunk_map
+        mut player_chunk_map
     ) in loader_query.iter_mut() {
         let camera_chunk_pos = pixel_pos_to_chunk_pos(
             &transform.translation.xy()
@@ -174,13 +207,14 @@ pub fn handle_chunk_spawning(
                         ..(camera_chunk_pos.x + CHUNK_SPAWN_RADIUS_X) {
                 let chunk_ipos = IVec2::new(x, y);
                 if !all_chunks.contains_key(&chunk_ipos) {
-                    let chunk_entity = spawn_chunk(
+                    spawn_chunk_base(
                         &mut commands,
-                        &asset_server,
-                        chunk_ipos
+                        thread_pool,
+                        texture.get(),
+                        chunk_ipos,
+                        &mut all_chunks,
+                        &mut player_chunk_map
                     );
-                    all_chunks.insert(chunk_ipos, chunk_entity);
-                    chunk_map.insert(chunk_ipos, chunk_entity);
                 }
             }
         }

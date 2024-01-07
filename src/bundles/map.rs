@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, tasks::Task, ecs::system::CommandQueue};
 use bevy_ecs_tilemap::prelude::*;
 use crate::{components::map::*, constants::map::*};
 
@@ -37,3 +37,6 @@ impl Layer {
         }
     }
 }
+
+#[derive(Component, Deref)]
+pub struct ChunkTask(pub Task<CommandQueue>);
