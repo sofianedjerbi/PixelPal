@@ -132,7 +132,6 @@ fn is_action_possible(
     chunk_query: &Query<&TileStorage>,
     tile_query: &Query<&ReliefLevel>,
 ) -> bool {
-    return true;
     if !matches!(action.kind, ActionKind::Walk | ActionKind::Run) {
         return true;
     }

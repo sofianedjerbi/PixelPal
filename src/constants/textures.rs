@@ -97,10 +97,6 @@ pub const TEXTURE_ID_OFFSET_MAP: TextureIDOffsetPHF = TextureIDOffsetPHF(
     }
 );
 
-pub const TEXTURE_3RD_LAYER_LIST: &[u32] = &[
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 44, 45, 46, 47
-];
-
 pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
     // 000
     // 0_0 => 000_0_0_000
