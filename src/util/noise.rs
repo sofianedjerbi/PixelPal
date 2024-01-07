@@ -25,6 +25,8 @@ impl TiledNoise {
     ) -> Self {
         let mut noise = Fbm::<Perlin>::default();
         noise = noise.set_seed(seed);
+        noise.octaves = NOISE_OCTAVES;
+        noise.frequency = NOISE_FREQUENCY;
         TiledNoise {
             noise, 
             layer_range,

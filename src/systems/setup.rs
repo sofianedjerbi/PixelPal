@@ -24,10 +24,11 @@ pub fn setup(
     // Spawn the camera
     commands.spawn((
         Camera2dBundle {
+            transform: Transform::from_scale(Vec3::new(5., 5., 1.)),
             ..Default::default()
         },
-        PixelZoom::Fixed(ZOOM),
-        PixelViewport,
+        //PixelZoom::Fixed(ZOOM),
+        //PixelViewport,
     )).insert(IsGameCamera);
 
     // Spawn Player

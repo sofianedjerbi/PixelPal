@@ -97,7 +97,7 @@ fn spawn_chunk_base(
                     let id_0 = if !is_edge {
                         get_random_tile_id(level)
                     } else {
-                        get_random_tile_id(adjust_to_water_level(level))
+                        get_random_tile_id(level - 1)
                     };
 
                     let tile_bundle_0 = DataTileBundle {
@@ -256,44 +256,15 @@ fn get_random_tile_id(level: u32) -> u32 {
     *tile_probability_map.get(key).unwrap() + TEXTURE_ID_OFFSET_MAP[&level]
 }
 
-
-fn compare_relative_to_water(
-    sample: u32,
-    layer: u32
-) -> bool {
-    match adjust_to_water_level(layer) {
-        n if n < layer => sample < layer,
-        n if n > layer => sample > layer,
-        _ => false
-    }
-}
-
-
 fn get_mask(value: u32,x: i32, y: i32) -> u32 {
-    let got_n = compare_relative_to_water(
-        NOISE.get_value(x, y + 1), value
-    );
-    let got_s = compare_relative_to_water(
-        NOISE.get_value(x, y - 1), value
-    );
-    let got_e = compare_relative_to_water(
-        NOISE.get_value(x + 1, y), value
-    );
-    let got_w = compare_relative_to_water(
-        NOISE.get_value(x - 1, y), value
-    );
-    let got_nw = compare_relative_to_water(
-        NOISE.get_value(x - 1, y + 1), value
-    );
-    let got_ne = compare_relative_to_water(
-        NOISE.get_value(x + 1, y + 1), value
-    );
-    let got_sw = compare_relative_to_water(
-        NOISE.get_value(x - 1, y - 1), value
-    );
-    let got_se = compare_relative_to_water(
-        NOISE.get_value(x + 1, y - 1), value
-    );
+    let got_n = NOISE.get_value(x, y + 1) < value;
+    let got_s = NOISE.get_value(x, y - 1) < value;
+    let got_e = NOISE.get_value(x + 1, y) < value;
+    let got_w = NOISE.get_value(x - 1, y) < value;
+    let got_nw = NOISE.get_value(x - 1, y + 1) < value;
+    let got_ne = NOISE.get_value(x + 1, y + 1) < value;
+    let got_sw = NOISE.get_value(x - 1, y - 1) < value;
+    let got_se = NOISE.get_value(x + 1, y - 1) < value;
 
     0b000_0_0_000 
         + if got_n { 0b010_0_0_000 } else { 0 }
@@ -308,12 +279,4 @@ fn get_mask(value: u32,x: i32, y: i32) -> u32 {
 
 fn mask_to_id(mask: u32, value: u32) -> u32 {
     TEXTURE_CORNER_IDS_MAP[&mask] + TEXTURE_ID_OFFSET_MAP[&value]
-}
-
-fn adjust_to_water_level(n: u32) -> u32 {
-    match n {
-        n if n < WATER_LEVEL => n + 1,
-        n if n > WATER_LEVEL => n - 1,
-        _ => n,
-    }
 }

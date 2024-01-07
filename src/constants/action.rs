@@ -4,7 +4,7 @@ use crate::components::action::*;
 
 pub const ACTION_TICK_FREQUENCY: Duration = Duration::from_millis(20);
 pub const WALK_RATE: f32 = 1.;
-pub const RUN_RATE: f32 = 1.;
+pub const RUN_RATE: f32 = 100.;
 
 
 // PLAYER VALUES

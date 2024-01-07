@@ -62,16 +62,14 @@ pub const SOIL_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
 
 pub const TEXTURE_RELIEF_IDS_MAP: TextureReliefIDsPHF = TextureReliefIDsPHF(
     phf_map! {
-        0u32 => &GRASS_MAP,
+        0u32 => &WATER_MAP,
         1u32 => &SOIL_MAP,
-        2u32 => &WATER_MAP,
-        3u32 => &SOIL_MAP,
+        2u32 => &GRASS_MAP,
+        3u32 => &GRASS_MAP,
         4u32 => &GRASS_MAP,
-        5u32 => &GRASS_MAP,
-        6u32 => &GRASS_MAP,
+        5u32 => &DARKER_GRASS_MAP,
+        6u32 => &DARKER_GRASS_MAP,
         7u32 => &DARKER_GRASS_MAP,
-        8u32 => &DARKER_GRASS_MAP,
-        9u32 => &DARKER_GRASS_MAP,
     }
 );
 
@@ -86,22 +84,22 @@ const DARKER_GRASS_HILL: u32 = 5;
 
 const TILESET_SIZE: u32 = 77;
 
-pub const WATER_LEVEL: u32 = 2;
-
 pub const TEXTURE_ID_OFFSET_MAP: TextureIDOffsetPHF = TextureIDOffsetPHF(
     phf_map! {
-        0u32 => TILESET_SIZE*GRASS_HILL,
+        0u32 => TILESET_SIZE*WATER,
         1u32 => TILESET_SIZE*SOIL,
-        2u32 => TILESET_SIZE*WATER,
-        3u32 => TILESET_SIZE*SOIL,
+        2u32 => TILESET_SIZE*GRASS_HILL,
+        3u32 => TILESET_SIZE*GRASS_HILL,
         4u32 => TILESET_SIZE*GRASS_HILL,
-        5u32 => TILESET_SIZE*GRASS_HILL,
-        6u32 => TILESET_SIZE*GRASS_HILL,
+        5u32 => TILESET_SIZE*DARKER_GRASS_HILL,
+        6u32 => TILESET_SIZE*DARKER_GRASS_HILL,
         7u32 => TILESET_SIZE*DARKER_GRASS_HILL,
-        8u32 => TILESET_SIZE*DARKER_GRASS_HILL,
-        9u32 => TILESET_SIZE*DARKER_GRASS_HILL,
     }
 );
+
+pub const TEXTURE_3RD_LAYER_LIST: &[u32] = &[
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 44, 45, 46, 47
+];
 
 pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
     // 000
