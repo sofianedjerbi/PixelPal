@@ -37,3 +37,6 @@ impl AnimationFramesMap {
 
 #[derive(Component)]
 pub struct IsGameCamera;
+
+#[derive(Component, Deref)]
+pub struct TileAnimation(Option<SpriteAnimation>);

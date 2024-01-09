@@ -1,12 +1,18 @@
-use bevy::{prelude::*, tasks::Task, ecs::system::CommandQueue};
+use bevy::prelude::*;
+use bevy::tasks::Task;
+use bevy::ecs::system::CommandQueue;
 use bevy_ecs_tilemap::prelude::*;
-use crate::{components::map::*, constants::map::*};
+
+use crate::components::map::*;
+use crate::components::animation::TileAnimation;
+use crate::constants::map::*;
 
 
 #[derive(Bundle)]
 pub struct DataTileBundle {
     pub tile: TileBundle,
-    pub level: ReliefLevel
+    pub level: ReliefLevel,
+    pub animation: TileAnimation
 }
 
 #[derive(Bundle, Clone)]
