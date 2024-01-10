@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::render::texture;
 use crate::components::action::*;
 use crate::components::animation::*;
 use crate::components::characters::*;
@@ -10,54 +11,47 @@ use crate::constants::characters::*;
 use crate::constants::map::TILE;
 use crate::constants::sprites::*;
 
+use super::animation::AnimationBundle;
+
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
     pub busy: Busy,
     pub health: Health,
-    pub sprite: SpriteSheetBundle,
     pub current_action: Action,
-    pub animation_state: AnimationState,
     pub action_timer: ActionTimer,
-    pub animation_frames: AnimationFramesMap,
     pub action_duration: ActionDurationPHF,
     pub chunk_map: ChunkMap,
+    pub animation: AnimationBundle,
+    pub animation_frames: ActionAnimationMap,
     pub offset: TilesetOffset
 }
 
 impl PlayerBundle {
     pub fn new(
         position: Vec2,
-        asset_server: &Res<AssetServer>,
-        textures: &mut ResMut<Assets<TextureAtlas>>
+        texture: Handle<Image>,
+        texture_atlas: &mut ResMut<Assets<TextureAtlas>>
     ) -> Self {
-        PlayerBundle {
+        Self {
             busy: Busy(false),
             health: PLAYER_HEALTH,
-            sprite: SpriteSheetBundle {
-                transform: Transform::from_xyz(
-                    position.x,
-                    position.y + TILE / 2.,
-                    PLAYER_SPRITE_LAYER),
-                texture_atlas: textures.add(
-                        TextureAtlas::from_grid(
-                        asset_server.load(PLAYER_SPRITE),
-                        PLAYER_SPRITE_SIZE.into(),
-                        PLAYER_SPRITE_COLUMNS,
-                        PLAYER_SPRITE_ROWS,
-                        PLAYER_SPRITE_PADDING,
-                        PLAYER_SPRITE_OFFSET
-                    )
-                ),
-                ..Default::default()
-            },
             current_action: PLAYER_ACTION_DEFAULT,
-            animation_state: AnimationState::default(),
             action_timer: PLAYER_ACTION_DURATION_MAP
                 .generate_timer(&PLAYER_ACTION_DEFAULT),
-            animation_frames: PLAYER_SPRITE_INDICES_MAP.clone(),
             action_duration: PLAYER_ACTION_DURATION_MAP,
             chunk_map: ChunkMap::new(),
+            animation: AnimationBundle::new(
+                Vec3::new(
+                    position.x,
+                    position.y + TILE / 2.,
+                    PLAYER_SPRITE_LAYER
+                ),
+                PLAYER_SPRITE_GRID,
+                texture,
+                texture_atlas
+            ),
+            animation_frames: PLAYER_SPRITE_INDICES_MAP.clone(),
             offset: TilesetOffset(
                 Vec2::new(0., TILE / 2.)
             )

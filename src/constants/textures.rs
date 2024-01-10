@@ -1,4 +1,8 @@
 use crate::components::textures::*;
+use crate::components::animation::*;
+use crate::util::animation::new_animation;
+use bevy::utils::HashMap;
+use once_cell::sync::Lazy;
 use phf::phf_map;
 
 
@@ -96,6 +100,19 @@ pub const TEXTURE_ID_OFFSET_MAP: TextureIDOffsetPHF = TextureIDOffsetPHF(
         7u32 => TILESET_SIZE*DARKER_GRASS_HILL,
     }
 );
+
+const WATER_FPS: f64 = 10.;
+
+pub const TEXTURE_ANIMATION_MAP: Lazy<TileAnimationMap> = Lazy::new(|| {
+    TileAnimationMap(
+        HashMap::from([
+            (
+                (0, 0),
+                new_animation(0..4, WATER_FPS)
+            ),
+        ])
+    )
+});
 
 pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
     // 000

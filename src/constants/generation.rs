@@ -17,7 +17,7 @@ pub const MAX_VALUE: f64 = 7.; // Relief
 // From 0 to 2 (performance reasons)
 pub const LAYER_RANGE: [f64; MAX_VALUE as usize + 2] = [
     0.,
-    0.75,
+    0.8,
     0.9,
     1.1,
     1.25,

@@ -14,8 +14,8 @@ pub struct GptBundle {
 impl GptBundle {
     pub fn new(
         position: Vec2,
-        asset_server: &Res<AssetServer>,
-        textures: &mut ResMut<Assets<TextureAtlas>>,
+        texture: Handle<Image>,
+        texture_atlas: &mut ResMut<Assets<TextureAtlas>>,
         key: &str
     ) -> Option<Self> {
         match GPTAgent::new(key) {
@@ -24,7 +24,7 @@ impl GptBundle {
                 agent.add_context(CONTEXT);
                 agent.add_context(COMMANDS);
                 Some(GptBundle {
-                    player: PlayerBundle::new(position, asset_server, textures),
+                    player: PlayerBundle::new(position, texture, texture_atlas),
                     agent
                 })
             }

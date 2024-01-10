@@ -4,11 +4,12 @@ use bevy::prelude::*;
 use bevy_pixel_camera::*;
 use crate::bundles::gpt::GptBundle;
 use crate::bundles::player::PlayerBundle;
-use crate::components::animation::IsGameCamera;
 use crate::components::characters::*;
+use crate::components::display::IsGameCamera;
 use crate::components::map::MainTilemapTexture;
 use crate::constants::characters::*;
 use crate::constants::display::*;
+use crate::constants::sprites::PLAYER_SPRITE;
 
 pub fn setup(
     mut commands: Commands,
@@ -32,14 +33,23 @@ pub fn setup(
     )).insert(IsGameCamera);
 
     // Spawn Player
-    commands.spawn(
-        PlayerBundle::new(USER_SPAWN, &asset_server, &mut textures)
-    ).insert(IsUser);
+    let player_texture = asset_server.load(PLAYER_SPRITE);
+
+    commands.spawn(PlayerBundle::new(
+        USER_SPAWN,
+        player_texture.clone(),
+        &mut textures
+    )).insert(IsUser);
 
     // Spawn Mittens (GPT)
     let option_key = env::var("GPT_KEY");
     if let Ok(key) = option_key {
-        let option_gpt = GptBundle::new(MITTENS_SPAWN, &asset_server, &mut textures, &key);
+        let option_gpt = GptBundle::new(
+            MITTENS_SPAWN,
+            player_texture.clone(),
+            &mut textures,
+            &key
+        );
         if let Some(gpt) = option_gpt {
             commands.spawn(gpt).insert(IsBot);
         }

@@ -10,7 +10,7 @@ pub fn animate_sprite(
         &mut AnimationState,
         &mut TextureAtlasSprite,
         &Action,
-        &AnimationFramesMap
+        &ActionAnimationMap
     )>,
 ) {
     for (
