@@ -7,15 +7,12 @@ use crate::components::animation::*;
 pub struct AnimationBundle {
     pub sprite: SpriteSheetBundle,
     pub animation_state: AnimationState,
-
 }
 
 impl AnimationBundle {
     pub fn new(
         position: Vec3,
-        sprite_grid: AnimationSpriteGrid,
-        texture: Handle<Image>,
-        texture_atlas: &mut ResMut<Assets<TextureAtlas>>,
+        texture_atlas: Handle<TextureAtlas>,
     ) -> Self {
         Self {
             sprite: SpriteSheetBundle {
@@ -24,9 +21,7 @@ impl AnimationBundle {
                     position.y,
                     position.z
                 ),
-                texture_atlas: texture_atlas.add(
-                    sprite_grid.to_atlas(texture)
-                ),
+                texture_atlas,
                 ..Default::default()
             },
             animation_state: AnimationState::default(),
@@ -34,3 +29,8 @@ impl AnimationBundle {
     }
 }
 
+#[derive(Bundle)]
+pub struct ActionAnimationBundle {
+    pub animation_bundle: AnimationBundle,
+    pub action_animation_map: ActionAnimationMap,
+}

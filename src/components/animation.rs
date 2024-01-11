@@ -8,6 +8,24 @@ use super::action::Action;
 #[derive(Default, Component, Deref, DerefMut)]
 pub struct AnimationState(pub benimator::State);
 
+
+#[derive(Component, Clone)]
+pub struct FixedAnimation {
+    pub start: u32,
+    pub end: u32,
+    pub speed: f32
+}
+
+impl FixedAnimation {
+    pub fn new(
+        start: u32,
+        end: u32,
+        speed: f32
+    ) -> Self {
+        Self { start, end, speed }
+    }
+}
+
 #[derive(Component, Clone, Deref)]
 pub struct ActionAnimationMap(
     pub HashMap<Action, Animation>
@@ -15,12 +33,18 @@ pub struct ActionAnimationMap(
 
 #[derive(Component, Clone, Deref)]
 pub struct TileAnimationMap(
-    pub HashMap<(u32, u32), Animation> // (layer, tile)
+    pub HashMap<(u32, u32), FixedAnimation> // (layer, tile)
 );
+
+impl TileAnimationMap {
+    pub fn lookup(&self, position: &(u32, u32)) -> Option<FixedAnimation> {
+        self.get(position).cloned()
+    }
+}
 
 impl ActionAnimationMap {
     pub fn lookup(&self, action: &Action) -> &Animation {
-        self.0.get(action).unwrap()
+        self.get(action).unwrap()
     }
 }
 
@@ -33,16 +57,6 @@ pub struct AnimationSpriteGrid {
 }
 
 impl AnimationSpriteGrid {
-    pub fn default() -> Self {
-        Self {
-            size: Vec2::new(0., 0.),
-            columns: 0,
-            rows: 0,
-            padding: None,
-            offset: None
-        }
-    }
-
     pub fn to_atlas(
         &self,
         texture: Handle<Image>

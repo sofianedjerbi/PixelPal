@@ -10,6 +10,7 @@ use crate::components::map::MainTilemapTexture;
 use crate::constants::characters::*;
 use crate::constants::display::*;
 use crate::constants::sprites::PLAYER_SPRITE;
+use crate::constants::textures::TEXTURE_PATH;
 
 pub fn setup(
     mut commands: Commands,
@@ -19,7 +20,7 @@ pub fn setup(
  ) {
     // Load tileset
     main_texture.set_handle(
-        asset_server.load("tileset/environment/full.png")
+        asset_server.load(TEXTURE_PATH)
     );
 
     // Spawn the camera

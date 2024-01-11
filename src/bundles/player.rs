@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy::render::texture;
 use crate::components::action::*;
-use crate::components::animation::*;
 use crate::components::characters::*;
 use crate::components::map::ChunkMap;
 use crate::components::textures::TilesetOffset;
@@ -11,6 +9,7 @@ use crate::constants::characters::*;
 use crate::constants::map::TILE;
 use crate::constants::sprites::*;
 
+use super::animation::ActionAnimationBundle;
 use super::animation::AnimationBundle;
 
 
@@ -22,8 +21,7 @@ pub struct PlayerBundle {
     pub action_timer: ActionTimer,
     pub action_duration: ActionDurationPHF,
     pub chunk_map: ChunkMap,
-    pub animation: AnimationBundle,
-    pub animation_frames: ActionAnimationMap,
+    pub animation: ActionAnimationBundle,
     pub offset: TilesetOffset
 }
 
@@ -41,17 +39,19 @@ impl PlayerBundle {
                 .generate_timer(&PLAYER_ACTION_DEFAULT),
             action_duration: PLAYER_ACTION_DURATION_MAP,
             chunk_map: ChunkMap::new(),
-            animation: AnimationBundle::new(
-                Vec3::new(
-                    position.x,
-                    position.y + TILE / 2.,
-                    PLAYER_SPRITE_LAYER
+            animation: ActionAnimationBundle {
+                    animation_bundle: AnimationBundle::new(
+                    Vec3::new(
+                        position.x,
+                        position.y + TILE / 2.,
+                        PLAYER_SPRITE_LAYER
+                    ),
+                    texture_atlas.add(
+                        PLAYER_SPRITE_GRID.to_atlas(texture)
+                    ),
                 ),
-                PLAYER_SPRITE_GRID,
-                texture,
-                texture_atlas
-            ),
-            animation_frames: PLAYER_SPRITE_INDICES_MAP.clone(),
+                action_animation_map: PLAYER_SPRITE_INDICES_MAP.clone(),
+            },
             offset: TilesetOffset(
                 Vec2::new(0., TILE / 2.)
             )

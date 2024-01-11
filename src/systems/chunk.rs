@@ -35,10 +35,10 @@ static NOISE: Lazy<TiledNoise> = Lazy::new(|| {
 fn spawn_chunk_base(
     commands: &mut Commands,
     thread_pool: &AsyncComputeTaskPool,
-    texture: TilemapTexture,
     chunk_pos: IVec2,
     all_chunks: &mut ResMut<ChunkMap>,
     player_chunk_map: &mut Mut<'_, ChunkMap>,
+    texture: TilemapTexture
 ) {
     log::debug!("Spawning chunk: {}", chunk_pos);
 
@@ -61,37 +61,17 @@ fn spawn_chunk_base(
 
             for x in 0..CHUNK_SIZE.x {
                 for y in 0..CHUNK_SIZE.y {
+                    let pos_x = base_x + x as i32;
+                    let pos_y = base_y + y as i32;
                     let tile_pos = TilePos { x, y };
                     let level = NOISE.get_value(
-                        base_x + x as i32, 
-                        base_y + y as i32
+                        pos_x,
+                        pos_y
                     );
-                    /*let transform_text = Transform::from_xyz(
-                        (base_x + x as i32) as f32 * TILE,
-                        (base_y + y as i32) as f32 * TILE,
-                        10.0,
-                    );
-
-                    world.spawn(Text2dBundle {
-                        text: Text { 
-                            sections: vec![TextSection {
-                                value: format!("{}", level),
-                                style: TextStyle {
-                                    font_size: 11.,
-                                    ..Default::default()
-                                },
-                                ..Default::default()
-                            }],
-                            alignment:TextAlignment::Center,
-                            ..Default::default()
-                        },
-                        transform: transform_text,
-                        ..Default::default()
-                    });*/
                     let mask = get_mask(
                         level,
-                        base_x + x as i32,
-                        base_y + y as i32
+                        pos_x,
+                        pos_y
                     );
                     let is_edge = mask != 0;
                     let id_0 = if !is_edge {
@@ -99,6 +79,8 @@ fn spawn_chunk_base(
                     } else {
                         get_random_tile_id(level - 1)
                     };
+
+                    
 
                     let tile_bundle_0 = DataTileBundle {
                         tile: TileBundle {
@@ -113,6 +95,16 @@ fn spawn_chunk_base(
                     let tile_entity_0 = world.spawn(tile_bundle_0).id();
                     world.entity_mut(layer_entity_0).add_child(tile_entity_0);
                     tile_storage_0.set(&tile_pos, tile_entity_0);
+
+                    if let Some(animation) = TEXTURE_ANIMATION_MAP.lookup(&(level, id_0)) {
+                        world.entity_mut(tile_entity_0).insert(
+                            AnimatedTile {
+                                start: animation.start,
+                                end: animation.end,
+                                speed: animation.speed
+                            },
+                        );
+                    }
 
                     if is_edge {
                         let id_1 = mask_to_id(mask, level);
@@ -234,10 +226,10 @@ pub fn create_chunk_tasks(
                     spawn_chunk_base(
                         &mut commands,
                         thread_pool,
-                        texture.get(),
                         chunk_ipos,
                         &mut all_chunks,
-                        &mut player_chunk_map
+                        &mut player_chunk_map,
+                        texture.get(),
                     );
                 }
             }

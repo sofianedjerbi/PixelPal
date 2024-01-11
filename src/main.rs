@@ -45,6 +45,7 @@ fn main(){
             ..Default::default()
         })
         .insert_resource(MainTilemapTexture::default())
+        .insert_resource(ChunkMap::new())
         .add_plugins(TilemapPlugin)
         .add_systems(Startup, systems::setup::setup)
         .add_systems(Update, systems::input::handle_input)
@@ -64,6 +65,5 @@ fn main(){
             systems::movement::camera_follow_player
                 .after(systems::movement::move_characters)
         )
-        .insert_resource(ChunkMap::new())
         .run();
 }
