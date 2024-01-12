@@ -4,7 +4,6 @@ use bevy::utils::HashMap;
 
 use super::action::Action;
 
-
 #[derive(Default, Component, Deref, DerefMut)]
 pub struct AnimationState(pub benimator::State);
 

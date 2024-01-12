@@ -10,7 +10,7 @@ use bevy_ecs_tilemap::map::TilemapTexture;
 #[derive(Resource, Deref, DerefMut)]
 pub struct MainTilemapTexture(
     /// The handle to the tilemap texture.
-    Option<TilemapTexture>
+    Option<TilemapTexture>,
 );
 
 impl MainTilemapTexture {
@@ -38,7 +38,7 @@ impl MainTilemapTexture {
 #[derive(Component, Deref)]
 pub struct ReliefLevel(
     /// The relief level value.
-    pub u32
+    pub u32,
 );
 
 impl fmt::Display for ReliefLevel {
@@ -51,14 +51,14 @@ impl fmt::Display for ReliefLevel {
 #[derive(Component)]
 pub struct SavingName(
     /// The name used for saving.
-    pub String
+    pub String,
 );
 
 /// Component representing the chunk map.
 #[derive(Component, Resource, Default, Deref, DerefMut)]
 pub struct ChunkMap(
     /// A HashMap that maps chunk positions to their respective entities.
-    pub HashMap<IVec2, (Entity, Entity)>
+    pub HashMap<IVec2, (Entity, Entity)>,
 );
 
 impl ChunkMap {
@@ -72,7 +72,7 @@ impl ChunkMap {
 #[derive(Component, Clone, Deref)]
 pub struct LayerId(
     /// The ID of the layer.
-    pub u32
+    pub u32,
 );
 
 /// Component representing a chunk task with a command queue.

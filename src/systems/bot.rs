@@ -6,7 +6,6 @@ use crate::components::textures::TilesetOffset;
 use crate::constants::bot::BOT_VIEW_DISTANCE;
 use crate::util::position::*;
 
-
 /// Processes bot behavior based on the environment and user positions.
 ///
 /// This function checks the surroundings of each bot and updates its actions
@@ -18,7 +17,7 @@ use crate::util::position::*;
 /// - `user_query`: Query to access user characters and their properties.
 pub fn query_bot(
     bot_query: Query<(&Transform, &TilesetOffset, &GPTAgent), With<IsBot>>,
-    user_query: Query<(&Transform, &TilesetOffset), With<IsUser>>
+    user_query: Query<(&Transform, &TilesetOffset), With<IsUser>>,
 ) {
     for (transform, offset, agent) in bot_query.iter() {
         let is_empty = {
@@ -41,15 +40,25 @@ pub fn query_bot(
         for (transform, offset) in user_query.iter() {
             let user_tile_pos = player_tile_pos(transform, offset);
             let relative_position = user_tile_pos - bot_tile_pos;
-            if relative_position.x.abs() > BOT_VIEW_DISTANCE ||
-               relative_position.y.abs() > BOT_VIEW_DISTANCE {
+            if relative_position.x.abs() > BOT_VIEW_DISTANCE
+                || relative_position.y.abs() > BOT_VIEW_DISTANCE
+            {
                 continue;
             }
-            
-            let horizontal_direction = if relative_position.x > 0 { "right" } else { "left" };
-            let vertical_direction = if relative_position.y > 0 { "up" } else { "down" };
 
-            map.push_str(&format!("Player is {} to your {} and {} to your {}",
+            let horizontal_direction = if relative_position.x > 0 {
+                "right"
+            } else {
+                "left"
+            };
+            let vertical_direction = if relative_position.y > 0 {
+                "up"
+            } else {
+                "down"
+            };
+
+            map.push_str(&format!(
+                "Player is {} to your {} and {} to your {}",
                 relative_position.x.abs(),
                 horizontal_direction,
                 relative_position.y.abs(),

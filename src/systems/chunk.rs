@@ -1,15 +1,15 @@
 use bevy::ecs::system::CommandQueue;
-use bevy::prelude::*;
 use bevy::log;
+use bevy::prelude::*;
+use bevy::tasks::block_on;
 use bevy::tasks::AsyncComputeTaskPool;
 use bevy::tasks::Task;
-use bevy::tasks::block_on;
 use bevy_ecs_tilemap::prelude::*;
 use futures_lite::future::poll_once;
 use once_cell::sync::Lazy;
 
-use crate::bundles::map::*;
 use crate::bundles::map::DataTileBundle;
+use crate::bundles::map::*;
 use crate::components::map::*;
 use crate::constants::generation::CACHE_SIZE;
 use crate::constants::generation::LAYER_RANGE;
@@ -21,14 +21,13 @@ use crate::util::noise::TiledNoise;
 use crate::util::position::*;
 use crate::util::tile::*;
 
-
 static NOISE: Lazy<TiledNoise> = Lazy::new(|| {
     TiledNoise::new(
         0,
         LAYER_RANGE.to_vec(),
         NOISE_ZOOM,
         SAMPLE_NUMBER,
-        CACHE_SIZE
+        CACHE_SIZE,
     )
 });
 
@@ -55,8 +54,8 @@ struct LayeredTileConfig<'a> {
 }
 
 /// Handles despawning of chunks that are out of range.
-/// 
-/// This function iterates through chunks and despawns those that are beyond the 
+///
+/// This function iterates through chunks and despawns those that are beyond the
 /// specified despawn range from the player's current position.
 ///
 /// # Parameters
@@ -66,16 +65,12 @@ struct LayeredTileConfig<'a> {
 pub fn handle_chunk_despawning(
     mut commands: Commands,
     mut all_chunks: ResMut<ChunkMap>,
-    mut loader_query: Query<(&Transform, &mut ChunkMap)>
+    mut loader_query: Query<(&Transform, &mut ChunkMap)>,
 ) {
-    for (
-        transform,
-        mut chunk_map
-    ) in loader_query.iter_mut() {
+    for (transform, mut chunk_map) in loader_query.iter_mut() {
         chunk_map.retain(|chunk_ipos, (layer0, layer1)| {
             let chunk_pos = chunk_pos_to_pixel_pos(chunk_ipos);
-            let distance = transform.translation.xy()
-                .distance_squared(chunk_pos);
+            let distance = transform.translation.xy().distance_squared(chunk_pos);
 
             if distance < CHUNK_DESPAWN_RANGE_PX_SQUARED {
                 true // Keep the chunk
@@ -91,8 +86,8 @@ pub fn handle_chunk_despawning(
 }
 
 /// Creates tasks for generating new chunks around the players.
-/// 
-/// This function spawns new chunks within the spawn radius around the player.s 
+///
+/// This function spawns new chunks within the spawn radius around the player.s
 /// It uses an asynchronous compute pool for chunk generation tasks.
 ///
 /// # Parameters
@@ -104,20 +99,17 @@ pub fn create_chunk_tasks(
     mut commands: Commands,
     mut all_chunks: ResMut<ChunkMap>,
     texture: Res<MainTilemapTexture>,
-    mut loader_query: Query<(&Transform, &mut ChunkMap)>
+    mut loader_query: Query<(&Transform, &mut ChunkMap)>,
 ) {
     let thread_pool = AsyncComputeTaskPool::get();
-    for (
-        transform,
-        mut player_chunk_map
-    ) in loader_query.iter_mut() {
-        let camera_chunk_pos = pixel_pos_to_chunk_pos(
-            &transform.translation.xy()
-        );
-        for y in (camera_chunk_pos.y - CHUNK_SPAWN_RADIUS_Y)
-                    ..(camera_chunk_pos.y + CHUNK_SPAWN_RADIUS_Y) {
+    for (transform, mut player_chunk_map) in loader_query.iter_mut() {
+        let camera_chunk_pos = pixel_pos_to_chunk_pos(&transform.translation.xy());
+        for y in
+            (camera_chunk_pos.y - CHUNK_SPAWN_RADIUS_Y)..(camera_chunk_pos.y + CHUNK_SPAWN_RADIUS_Y)
+        {
             for x in (camera_chunk_pos.x - CHUNK_SPAWN_RADIUS_X)
-                        ..(camera_chunk_pos.x + CHUNK_SPAWN_RADIUS_X) {
+                ..(camera_chunk_pos.x + CHUNK_SPAWN_RADIUS_X)
+            {
                 let chunk_ipos = IVec2::new(x, y);
                 if !all_chunks.contains_key(&chunk_ipos) {
                     spawn_chunk_base(
@@ -135,8 +127,8 @@ pub fn create_chunk_tasks(
 }
 
 /// Fetches and applies completed chunk generation tasks.
-/// 
-/// This function checks for completed asynchronous tasks for chunk generation 
+///
+/// This function checks for completed asynchronous tasks for chunk generation
 /// and applies them to the world state.
 ///
 /// # Parameters
@@ -144,7 +136,7 @@ pub fn create_chunk_tasks(
 /// - `transform_tasks`: Query for accessing chunk task components.
 pub fn fetch_chunk_tasks(
     mut commands: Commands,
-    mut transform_tasks: Query<(Entity, &mut ChunkTask)>
+    mut transform_tasks: Query<(Entity, &mut ChunkTask)>,
 ) {
     for (entity, mut task) in &mut transform_tasks {
         if let Some(mut queue) = block_on(poll_once(&mut task.0)) {
@@ -163,7 +155,7 @@ fn spawn_chunk_base(
     chunk_pos: IVec2,
     all_chunks: &mut ResMut<ChunkMap>,
     player_chunk_map: &mut Mut<'_, ChunkMap>,
-    texture: TilemapTexture
+    texture: TilemapTexture,
 ) {
     log::debug!("Spawning chunk: {}", chunk_pos);
 
@@ -174,7 +166,7 @@ fn spawn_chunk_base(
         chunk_pos,
         layer_entity_0,
         layer_entity_1,
-        texture.clone()
+        texture.clone(),
     );
 
     commands.spawn_empty().insert(ChunkTask(task));
@@ -188,11 +180,17 @@ fn create_chunk_task(
     chunk_pos: IVec2,
     layer_entity_0: Entity,
     layer_entity_1: Entity,
-    texture: TilemapTexture
+    texture: TilemapTexture,
 ) -> Task<CommandQueue> {
     thread_pool.spawn(async move {
         let mut command_queue = CommandQueue::default();
-        populate_command_queue(&mut command_queue, chunk_pos, layer_entity_0, layer_entity_1, texture);
+        populate_command_queue(
+            &mut command_queue,
+            chunk_pos,
+            layer_entity_0,
+            layer_entity_1,
+            texture,
+        );
         command_queue
     })
 }
@@ -203,7 +201,7 @@ fn populate_command_queue(
     chunk_pos: IVec2,
     layer_entity_0: Entity,
     layer_entity_1: Entity,
-    texture: TilemapTexture
+    texture: TilemapTexture,
 ) {
     command_queue.push(move |world: &mut World| {
         let mut tile_storage_0 = TileStorage::empty(CHUNK_SIZE.into());
@@ -223,7 +221,7 @@ fn populate_command_queue(
                     x,
                     y,
                 };
-                
+
                 setup_tile(world, layered_tile_setup_0);
             }
         }
@@ -236,7 +234,7 @@ fn populate_command_queue(
             base_y,
             z_position: 0.0,
         };
-        
+
         let config_1 = LayerConfig {
             layer_index: 1,
             tile_storage: &tile_storage_1,
@@ -245,17 +243,14 @@ fn populate_command_queue(
             base_y,
             z_position: 1.0,
         };
-        
+
         add_layer_to_world(world, layer_entity_0, &config_0);
         add_layer_to_world(world, layer_entity_1, &config_1);
     });
 }
 
 /// Sets up individual tiles within a chunk.
-fn setup_tile(
-    world: &mut World,
-    tile_config: LayeredTileConfig
-) {
+fn setup_tile(world: &mut World, tile_config: LayeredTileConfig) {
     let LayeredTileConfig {
         tile_storage_0,
         tile_storage_1,
@@ -293,13 +288,11 @@ fn setup_tile(
     tile_storage_0.set(&tile_pos, tile_entity_0);
 
     if let Some(animation) = TEXTURE_ANIMATION_MAP.lookup(&(level, id_0)) {
-        world.entity_mut(tile_entity_0).insert(
-            AnimatedTile {
-                start: animation.start,
-                end: animation.end,
-                speed: animation.speed,
-            },
-        );
+        world.entity_mut(tile_entity_0).insert(AnimatedTile {
+            start: animation.start,
+            end: animation.end,
+            speed: animation.speed,
+        });
     }
 
     if is_edge {

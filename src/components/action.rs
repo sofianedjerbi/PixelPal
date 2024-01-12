@@ -1,16 +1,17 @@
 use bevy::prelude::*;
 use phf::Map;
-use strum_macros::{Display, EnumString};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::str::FromStr;
+use strum_macros::{Display, EnumString};
 
-use crate::constants::map::TILE;
 use crate::constants::action::*;
-
+use crate::constants::map::TILE;
 
 /// Represents the direction of an action (e.g., Up, Down, Left, Right).
-#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString)]
+#[derive(
+    Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString,
+)]
 pub enum ActionDirection {
     #[strum(ascii_case_insensitive)]
     Up,
@@ -23,7 +24,9 @@ pub enum ActionDirection {
 }
 
 /// Represents the kind of an action (e.g., Stand, Walk, Run).
-#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString)]
+#[derive(
+    Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString,
+)]
 pub enum ActionKind {
     #[strum(ascii_case_insensitive)]
     Stand,
@@ -42,17 +45,14 @@ pub struct Action {
 }
 
 impl Action {
-    pub const fn new(
-        kind: ActionKind,
-        direction: ActionDirection
-    ) -> Self {
+    pub const fn new(kind: ActionKind, direction: ActionDirection) -> Self {
         Self { kind, direction }
     }
     pub const fn get_transformation(&self) -> Vec3 {
         let i_vector = self.get_raw_transformation();
         let vector = Vec2::new(
-            (i_vector.x * TILE as i32) as f32, 
-            (i_vector.y * TILE as i32) as f32
+            (i_vector.x * TILE as i32) as f32,
+            (i_vector.y * TILE as i32) as f32,
         );
         Vec3::new(vector.x, vector.y, 0.)
     }
@@ -73,7 +73,7 @@ impl Action {
     }
 
     /// Parses a command string and returns a vector of actions.
-    /// 
+    ///
     /// # Arguments
     /// * `commands` - A command string containing one or more actions.
     ///
@@ -104,7 +104,7 @@ impl Action {
         let direction = ActionDirection::from_str(parts[1]).ok()?;
 
         let times = if parts.len() == 3 {
-            parts[2].parse::<usize>().ok()? 
+            parts[2].parse::<usize>().ok()?
         } else {
             1
         };
@@ -117,27 +117,20 @@ impl Action {
     }
 }
 
-
 /// Check and handle action duration
 #[derive(Component, Deref, DerefMut)]
 pub struct ActionTimer(pub Timer);
 
 /// Describe entities action duration
 #[derive(Component)]
-pub struct ActionDurationPHF(
-    pub Map<&'static str, f32>
-);
+pub struct ActionDurationPHF(pub Map<&'static str, f32>);
 
 impl ActionDurationPHF {
     pub fn lookup(&self, action: &Action) -> f32 {
-        *self.0.get(&action.kind.to_string())
-               .unwrap() // We're unwrapping hardcoded values.
+        *self.0.get(&action.kind.to_string()).unwrap() // We're unwrapping hardcoded values.
     }
 
     pub fn generate_timer(&self, action: &Action) -> ActionTimer {
-        ActionTimer(Timer::from_seconds(
-            self.lookup(action),
-            TimerMode::Once
-        ))
+        ActionTimer(Timer::from_seconds(self.lookup(action), TimerMode::Once))
     }
 }

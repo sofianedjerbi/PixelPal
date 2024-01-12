@@ -2,7 +2,6 @@ use bevy::prelude::*;
 
 use crate::components::animation::*;
 
-
 /// Bundle for animated entities.
 #[derive(Bundle)]
 pub struct AnimationBundle {
@@ -11,17 +10,10 @@ pub struct AnimationBundle {
 }
 
 impl AnimationBundle {
-    pub fn new(
-        position: Vec3,
-        texture_atlas: Handle<TextureAtlas>,
-    ) -> Self {
+    pub fn new(position: Vec3, texture_atlas: Handle<TextureAtlas>) -> Self {
         Self {
             sprite: SpriteSheetBundle {
-                transform: Transform::from_xyz(
-                    position.x,
-                    position.y,
-                    position.z
-                ),
+                transform: Transform::from_xyz(position.x, position.y, position.z),
                 texture_atlas,
                 ..Default::default()
             },

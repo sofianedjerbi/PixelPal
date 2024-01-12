@@ -1,82 +1,71 @@
-use crate::components::textures::*;
 use crate::components::animation::*;
+use crate::components::textures::*;
 use bevy::utils::HashMap;
 use once_cell::sync::Lazy;
 use phf::phf_map;
 
-
 pub const TEXTURE_PATH: &str = "tileset/environment/full.png";
 
-pub const WATER_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
-    phf_map! {
-        0u32 => 0,
-    }
-);
+pub const WATER_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(phf_map! {
+    0u32 => 0,
+});
 
-pub const GRASS_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
-    phf_map! {
-        0u32 => 55,   // At least 15 units
-        15u32 => 56,  // At least 15 units
-        30u32 => 57,  // At least 15 units
-        45u32 => 58,  // Adjusted proportionally
-        50u32 => 59,  // Adjusted proportionally
-        55u32 => 60,  // Adjusted proportionally
-        60u32 => 66,  // At least 15 units
-        75u32 => 67,  // At least 15 units
-        90u32 => 68,  // At least 15 units
-        95u32 => 69,  // Adjusted proportionally
-        97u32 => 70,  // Adjusted proportionally
-        99u32 => 71,  // Adjusted proportionally
-        100u32 => 12, // 90%
-    }
-);
+pub const GRASS_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(phf_map! {
+    0u32 => 55,   // At least 15 units
+    15u32 => 56,  // At least 15 units
+    30u32 => 57,  // At least 15 units
+    45u32 => 58,  // Adjusted proportionally
+    50u32 => 59,  // Adjusted proportionally
+    55u32 => 60,  // Adjusted proportionally
+    60u32 => 66,  // At least 15 units
+    75u32 => 67,  // At least 15 units
+    90u32 => 68,  // At least 15 units
+    95u32 => 69,  // Adjusted proportionally
+    97u32 => 70,  // Adjusted proportionally
+    99u32 => 71,  // Adjusted proportionally
+    100u32 => 12, // 90%
+});
 
-pub const DARKER_GRASS_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
-    phf_map! {
-        0u32 => 55,   // At least 15 units
-        15u32 => 56,  // At least 15 units
-        30u32 => 57,  // At least 15 units
-        45u32 => 58,  // Adjusted proportionally
-        50u32 => 59,  // Adjusted proportionally
-        55u32 => 60,  // Adjusted proportionally
-        60u32 => 66,  // At least 15 units
-        75u32 => 67,  // At least 15 units
-        90u32 => 68,  // At least 15 units
-        95u32 => 69,  // Adjusted proportionally
-        97u32 => 70,  // Adjusted proportionally
-        99u32 => 71,  // Adjusted proportionally
-        100u32 => 12, // 90%
-    }
-);
+pub const DARKER_GRASS_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(phf_map! {
+    0u32 => 55,   // At least 15 units
+    15u32 => 56,  // At least 15 units
+    30u32 => 57,  // At least 15 units
+    45u32 => 58,  // Adjusted proportionally
+    50u32 => 59,  // Adjusted proportionally
+    55u32 => 60,  // Adjusted proportionally
+    60u32 => 66,  // At least 15 units
+    75u32 => 67,  // At least 15 units
+    90u32 => 68,  // At least 15 units
+    95u32 => 69,  // Adjusted proportionally
+    97u32 => 70,  // Adjusted proportionally
+    99u32 => 71,  // Adjusted proportionally
+    100u32 => 12, // 90%
+});
 
-pub const SOIL_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(
-    phf_map! {
-        0u32 => 55,   // 14.89 (rounded to 15)
-        15u32 => 56,  // 14.89 (rounded to 15)
-        30u32 => 57,  // 14.89 (rounded to 15)
-        45u32 => 58,  // 2.96 (rounded to 3)
-        48u32 => 59,  // 4.46 (rounded to 4)
-        52u32 => 66,  // 14.89 (rounded to 15)
-        67u32 => 67,  // 14.89 (rounded to 15)
-        82u32 => 68,  // 14.89 (rounded to 15)
-        97u32 => 69,  // 2.96 (rounded to 3)
-        100u32 => 70, // 4.46 (rounded to 4)
-        104u32 => 12, // 90% of 1000 (keys 100 to 1000)
-    }
-);
+pub const SOIL_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(phf_map! {
+    0u32 => 55,   // 14.89 (rounded to 15)
+    15u32 => 56,  // 14.89 (rounded to 15)
+    30u32 => 57,  // 14.89 (rounded to 15)
+    45u32 => 58,  // 2.96 (rounded to 3)
+    48u32 => 59,  // 4.46 (rounded to 4)
+    52u32 => 66,  // 14.89 (rounded to 15)
+    67u32 => 67,  // 14.89 (rounded to 15)
+    82u32 => 68,  // 14.89 (rounded to 15)
+    97u32 => 69,  // 2.96 (rounded to 3)
+    100u32 => 70, // 4.46 (rounded to 4)
+    104u32 => 12, // 90% of 1000 (keys 100 to 1000)
+});
 
-pub const TEXTURE_RELIEF_IDS_MAP: TextureReliefIDsPHF = TextureReliefIDsPHF(
-    phf_map! {
-        0u32 => &WATER_MAP,
-        1u32 => &SOIL_MAP,
-        2u32 => &GRASS_MAP,
-        3u32 => &GRASS_MAP,
-        4u32 => &GRASS_MAP,
-        5u32 => &DARKER_GRASS_MAP,
-        6u32 => &DARKER_GRASS_MAP,
-        7u32 => &DARKER_GRASS_MAP,
-    }
-);
+pub const TEXTURE_RELIEF_IDS_MAP: TextureReliefIDsPHF = TextureReliefIDsPHF(phf_map! {
+    0u32 => &WATER_MAP,
+    1u32 => &SOIL_MAP,
+    2u32 => &GRASS_MAP,
+    3u32 => &GRASS_MAP,
+    4u32 => &GRASS_MAP,
+    5u32 => &DARKER_GRASS_MAP,
+    6u32 => &DARKER_GRASS_MAP,
+    7u32 => &DARKER_GRASS_MAP,
+});
 
 const WATER: u32 = 0;
 const SOIL: u32 = 1;
@@ -89,30 +78,24 @@ const DARKER_GRASS_HILL: u32 = 5;
 
 const TILESET_SIZE: u32 = 77;
 
-pub const TEXTURE_ID_OFFSET_MAP: TextureIDOffsetPHF = TextureIDOffsetPHF(
-    phf_map! {
-        0u32 => TILESET_SIZE*WATER,
-        1u32 => TILESET_SIZE*SOIL,
-        2u32 => TILESET_SIZE*GRASS_HILL,
-        3u32 => TILESET_SIZE*GRASS_HILL,
-        4u32 => TILESET_SIZE*GRASS_HILL,
-        5u32 => TILESET_SIZE*DARKER_GRASS_HILL,
-        6u32 => TILESET_SIZE*DARKER_GRASS_HILL,
-        7u32 => TILESET_SIZE*DARKER_GRASS_HILL,
-    }
-);
+pub const TEXTURE_ID_OFFSET_MAP: TextureIDOffsetPHF = TextureIDOffsetPHF(phf_map! {
+    0u32 => TILESET_SIZE*WATER,
+    1u32 => TILESET_SIZE*SOIL,
+    2u32 => TILESET_SIZE*GRASS_HILL,
+    3u32 => TILESET_SIZE*GRASS_HILL,
+    4u32 => TILESET_SIZE*GRASS_HILL,
+    5u32 => TILESET_SIZE*DARKER_GRASS_HILL,
+    6u32 => TILESET_SIZE*DARKER_GRASS_HILL,
+    7u32 => TILESET_SIZE*DARKER_GRASS_HILL,
+});
 
 const WATER_FPS: f32 = 1.;
 
 pub static TEXTURE_ANIMATION_MAP: Lazy<TileAnimationMap> = Lazy::new(|| {
-    TileAnimationMap(
-        HashMap::from([
-            (
-                (0, 0),
-                FixedAnimation::new(0, 4, WATER_FPS)
-            ),
-        ])
-    )
+    TileAnimationMap(HashMap::from([(
+        (0, 0),
+        FixedAnimation::new(0, 4, WATER_FPS),
+    )]))
 });
 
 #[allow(clippy::unusual_byte_groupings)]
@@ -263,7 +246,7 @@ pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
         0b000_0_1_110u32 => 24,
         0b001_0_1_010u32 => 24,
         0b000_0_1_010u32 => 24,
-        
+
         0b101_1_1_111u32 => 25,
         0b100_1_1_111u32 => 25,
         0b001_1_1_111u32 => 25,
@@ -365,7 +348,7 @@ pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
         0b110_1_1_010u32 => 36,
         0b011_1_1_010u32 => 36,
         0b010_1_1_010u32 => 36,
-        
+
         0b101_1_0_111u32 => 37,
         0b001_1_0_111u32 => 37,
         0b101_1_0_011u32 => 37,
@@ -417,6 +400,5 @@ pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
         0b100_0_1_100u32 => 51,
 
         0b101_0_0_101u32 => 52,
-    }
+    },
 );
-

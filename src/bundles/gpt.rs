@@ -5,12 +5,11 @@ use crate::constants::bot::*;
 
 use super::player::PlayerBundle;
 
-
 /// Bundle for creating a GPT agent.
 #[derive(Bundle)]
 pub struct GptBundle {
     player: PlayerBundle,
-    agent: GPTAgent
+    agent: GPTAgent,
 }
 
 impl GptBundle {
@@ -18,7 +17,7 @@ impl GptBundle {
         position: Vec2,
         texture: Handle<Image>,
         texture_atlas: &mut ResMut<Assets<TextureAtlas>>,
-        key: &str
+        key: &str,
     ) -> Option<Self> {
         match GPTAgent::new(key) {
             None => None,
@@ -27,10 +26,9 @@ impl GptBundle {
                 agent.add_context(COMMANDS);
                 Some(GptBundle {
                     player: PlayerBundle::new(position, texture, texture_atlas),
-                    agent
+                    agent,
                 })
             }
         }
     }
 }
-

@@ -14,15 +14,5 @@ pub const SAMPLE_NUMBER: usize = 1;
  * 7: dark_grass
  */
 pub const MAX_VALUE: f64 = 7.; // Relief
-// From 0 to 2 (performance reasons)
-pub const LAYER_RANGE: [f64; MAX_VALUE as usize + 2] = [
-    0.,
-    0.8,
-    0.9,
-    1.1,
-    1.25,
-    1.4,
-    1.6,
-    1.8,
-    2.
-];
+                               // From 0 to 2 (performance reasons)
+pub const LAYER_RANGE: [f64; MAX_VALUE as usize + 2] = [0., 0.8, 0.9, 1.1, 1.25, 1.4, 1.6, 1.8, 2.];

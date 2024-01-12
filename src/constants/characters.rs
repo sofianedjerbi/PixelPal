@@ -1,8 +1,7 @@
-use bevy::prelude::*;
 use crate::components::characters::*;
+use bevy::prelude::*;
 
 use super::map::TILE;
-
 
 // PLAYERS
 pub const PLAYER_HEALTH: Health = Health(100);

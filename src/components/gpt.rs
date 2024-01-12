@@ -1,10 +1,10 @@
-use std::sync::Arc;
-use std::collections::VecDeque;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering;
 use bevy::log;
 use bevy::prelude::*;
 use chatgpt::prelude::*;
+use std::collections::VecDeque;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::constants::bot::*;
@@ -16,7 +16,7 @@ use super::action::Action;
 struct GPTConversation {
     client: ChatGPT,
     history: Vec<String>,
-    busy: Arc<AtomicBool>
+    busy: Arc<AtomicBool>,
 }
 
 impl GPTConversation {
@@ -41,7 +41,7 @@ impl GPTConversation {
                 let response_txt = &response.message().content;
                 log::debug!("Received:\n{}", response_txt);
                 Action::from_command_string(response_txt)
-            },
+            }
             Err(e) => {
                 log::warn!("Cannot get GPT answer: {}", e);
                 None
@@ -54,20 +54,14 @@ impl GPTConversation {
     }
 
     /// Retrieves actions with extra context.
-    async fn get_actions_with_extra_context(
-        &self,
-        context: &str
-    ) -> Option<Vec<Action>> {
+    async fn get_actions_with_extra_context(&self, context: &str) -> Option<Vec<Action>> {
         let mut message = self.history.join("\n");
         message.push_str(context);
         self.send_message_get_actions(&message).await
     }
 
     /// Adds context to the conversation's history.
-    fn add_context(
-        &mut self,
-        message: String
-    ) {
+    fn add_context(&mut self, message: String) {
         log::debug!("Adding to context:\n\"{}\"", message);
         self.history.push(message);
     }
@@ -77,28 +71,24 @@ impl GPTConversation {
 #[derive(Component)]
 pub struct GPTAgent {
     conversation: GPTConversation,
-    pub action_queue: Arc<Mutex<VecDeque<Action>>>
+    pub action_queue: Arc<Mutex<VecDeque<Action>>>,
 }
 
 impl GPTAgent {
     /// Creates a new GPTAgent with the provided API key.
     pub fn new(key: &str) -> Option<Self> {
         let config = ModelConfigurationBuilder::default()
-        .engine(ChatGPTEngine::Custom(MODEL))
-        .build()
-        .unwrap(); // We're sure this won't produce any error.
+            .engine(ChatGPTEngine::Custom(MODEL))
+            .build()
+            .unwrap(); // We're sure this won't produce any error.
 
         let result = ChatGPT::new_with_config(key, config);
-        
+
         match result {
-            Ok(client) => {
-                Some(
-                    Self {
-                        conversation: GPTConversation::new(client),
-                        action_queue: Arc::new(Mutex::new(VecDeque::new()))
-                    }
-                )
-            },
+            Ok(client) => Some(Self {
+                conversation: GPTConversation::new(client),
+                action_queue: Arc::new(Mutex::new(VecDeque::new())),
+            }),
             Err(e) => {
                 log::warn!("Cannot create ChatGPT client: {}", e);
                 None
@@ -115,21 +105,21 @@ impl GPTAgent {
         async_global_executor::spawn(async move {
             if let Ok(mut queue) = queue_arc.try_lock() {
                 if let Some(actions) = conversation
-                    .get_actions_with_extra_context(&message_clone).await {
+                    .get_actions_with_extra_context(&message_clone)
+                    .await
+                {
                     queue.extend(actions);
                 }
             }
-        }).detach(); // Detach & forget.
+        })
+        .detach(); // Detach & forget.
     }
 
     /// Adds context to the conversation.
-    pub fn add_context(
-        &mut self,
-        message: &str
-    ) {
+    pub fn add_context(&mut self, message: &str) {
         self.conversation.add_context(message.to_string());
     }
-    
+
     /// Checks if the GPT agent is busy.
     pub fn is_busy(&self) -> bool {
         self.conversation.busy.load(Ordering::Relaxed)

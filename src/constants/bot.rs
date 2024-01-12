@@ -7,5 +7,4 @@ Reply nothing else than with text commands. One command per line.
 Available commands:
 walk up/down/left/right times: walk left 5";
 
-pub const CONTEXT: &str = 
-    "Mission: Go to player position.";
+pub const CONTEXT: &str = "Mission: Go to player position.";

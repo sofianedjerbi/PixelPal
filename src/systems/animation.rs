@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use crate::components::action::*;
 use crate::components::animation::*;
 
-
 /// Updates the sprite animation based on the current action.
 ///
 /// This function iterates through entities with animations and updates their sprite
@@ -19,15 +18,10 @@ pub fn animate_sprite(
         &mut AnimationState,
         &mut TextureAtlasSprite,
         &Action,
-        &ActionAnimationMap
+        &ActionAnimationMap,
     )>,
 ) {
-    for (
-        mut state,
-        mut sprite,
-        action,
-        frames
-    ) in query.iter_mut() {
+    for (mut state, mut sprite, action, frames) in query.iter_mut() {
         let animation = frames.lookup(action);
         state.update(animation, time.delta());
         sprite.index = state.frame_index();
