@@ -9,6 +9,7 @@ use crate::constants::map::TILE;
 use crate::constants::action::*;
 
 
+/// Represents the direction of an action (e.g., Up, Down, Left, Right).
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString)]
 pub enum ActionDirection {
     #[strum(ascii_case_insensitive)]
@@ -18,9 +19,10 @@ pub enum ActionDirection {
     #[strum(ascii_case_insensitive)]
     Left,
     #[strum(ascii_case_insensitive)]
-    Right
+    Right,
 }
 
+/// Represents the kind of an action (e.g., Stand, Walk, Run).
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString)]
 pub enum ActionKind {
     #[strum(ascii_case_insensitive)]
@@ -32,10 +34,11 @@ pub enum ActionKind {
     // Add future actions here
 }
 
+/// Represents an action with a kind and direction.
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, JsonSchema, Deserialize)]
 pub struct Action {
     pub kind: ActionKind,
-    pub direction: ActionDirection
+    pub direction: ActionDirection,
 }
 
 impl Action {
@@ -45,7 +48,6 @@ impl Action {
     ) -> Self {
         Self { kind, direction }
     }
-
     pub const fn get_transformation(&self) -> Vec3 {
         let i_vector = self.get_raw_transformation();
         let vector = Vec2::new(
@@ -70,7 +72,13 @@ impl Action {
         }
     }
 
-
+    /// Parses a command string and returns a vector of actions.
+    /// 
+    /// # Arguments
+    /// * `commands` - A command string containing one or more actions.
+    ///
+    /// # Returns
+    /// A `Vec` of `Action` instances parsed from the command string.
     pub fn from_command_string(commands: &str) -> Option<Vec<Action>> {
         let uppercase = commands.to_uppercase();
         let mut actions = Vec::new();
@@ -109,9 +117,12 @@ impl Action {
     }
 }
 
+
+/// Check and handle action duration
 #[derive(Component, Deref, DerefMut)]
 pub struct ActionTimer(pub Timer);
 
+/// Describe entities action duration
 #[derive(Component)]
 pub struct ActionDurationPHF(
     pub Map<&'static str, f32>

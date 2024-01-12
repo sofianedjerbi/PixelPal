@@ -14,6 +14,16 @@ use crate::util::position::relative_tile_pos;
 use crate::util::position::tile_pos_to_chunk_pos;
 
 
+/// Handles keyboard input for player characters.
+/// 
+/// # Parameters
+/// - `keyboard_input`: The current state of the keyboard.
+/// - `query`: Query for accessing and modifying the components related to user actions.
+/// - `chunk_map`: Resource providing the game's chunk map.
+/// - `chunk_query`: Query for accessing tile storage data.
+/// - `tile_query`: Query for accessing relief level of tiles.
+/// 
+/// This function processes the keyboard inputs and updates the actions of the player character accordingly.
 pub fn handle_input(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(
@@ -76,7 +86,15 @@ pub fn handle_input(
     }
 }
 
-
+/// Handles input for bot characters.
+/// 
+/// # Parameters
+/// - `query`: Query for accessing and modifying the components related to bot actions.
+/// - `chunk_map`: Resource providing the game's chunk map.
+/// - `chunk_query`: Query for accessing tile storage data.
+/// - `tile_query`: Query for accessing relief level of tiles.
+/// 
+/// This function processes the actions queued for bot characters and updates their actions accordingly.
 pub fn handle_bot_input(
     mut query: Query<(
         &mut Busy,
@@ -124,6 +142,20 @@ pub fn handle_bot_input(
     }
 }
 
+/// Determines if an action is possible based on the current game state.
+/// 
+/// # Parameters
+/// - `action`: The action to be evaluated.
+/// - `transform`: The current transform of the entity.
+/// - `offset`: Tileset offset for calculating positions.
+/// - `chunk_map`: Resource providing the game's chunk map.
+/// - `chunk_query`: Query for accessing tile storage data.
+/// - `tile_query`: Query for accessing relief level of tiles.
+/// 
+/// # Returns
+/// Returns `true` if the action is possible, `false` otherwise.
+/// 
+/// This function checks if the specified action can be performed by the entity based on its current state and the state of the game world.
 fn is_action_possible(
     action: &Action,
     transform: &Transform,

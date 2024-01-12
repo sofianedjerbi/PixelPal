@@ -1,22 +1,21 @@
 use bevy::prelude::*;
-use bevy::tasks::Task;
-use bevy::ecs::system::CommandQueue;
 use bevy_ecs_tilemap::prelude::*;
 
 use crate::components::map::*;
 use crate::constants::map::*;
 
-
+/// Bundle for creating a data tile entity.
 #[derive(Bundle)]
 pub struct DataTileBundle {
     pub tile: TileBundle,
-    pub level: ReliefLevel
+    pub level: ReliefLevel,
 }
 
+/// Bundle for creating a layer entity.
 #[derive(Bundle, Clone)]
-pub struct Layer{
+pub struct Layer {
     pub id: LayerId,
-    pub tilemap: TilemapBundle
+    pub tilemap: TilemapBundle,
 }
 
 impl Layer {
@@ -24,7 +23,7 @@ impl Layer {
         id: u32,
         storage: TileStorage,
         texture: TilemapTexture,
-        transform: Transform
+        transform: Transform,
     ) -> Self {
         Self {
             id: LayerId(id),
@@ -36,10 +35,7 @@ impl Layer {
                 tile_size: TILE_SIZE,
                 transform: transform,
                 ..Default::default()
-            }
+            },
         }
     }
 }
-
-#[derive(Component, Deref)]
-pub struct ChunkTask(pub Task<CommandQueue>);

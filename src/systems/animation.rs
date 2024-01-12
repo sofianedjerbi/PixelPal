@@ -4,6 +4,15 @@ use crate::components::action::*;
 use crate::components::animation::*;
 
 
+/// Updates the sprite animation based on the current action.
+///
+/// This function iterates through entities with animations and updates their sprite
+/// based on the action being performed. It uses the elapsed time to determine the
+/// correct frame in the animation sequence.
+///
+/// # Parameters
+/// - `time`: Resource containing time information.
+/// - `query`: Query for accessing and modifying animation states, sprites, actions, and frame maps.
 pub fn animate_sprite(
     time: Res<Time>,
     mut query: Query<(

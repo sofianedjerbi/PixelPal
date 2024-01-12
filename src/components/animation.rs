@@ -8,33 +8,27 @@ use super::action::Action;
 #[derive(Default, Component, Deref, DerefMut)]
 pub struct AnimationState(pub benimator::State);
 
-
+/// Represents a tile animation with a start and end frame, and speed.
 #[derive(Component, Clone)]
 pub struct FixedAnimation {
     pub start: u32,
     pub end: u32,
-    pub speed: f32
+    pub speed: f32,
 }
 
 impl FixedAnimation {
-    pub fn new(
-        start: u32,
-        end: u32,
-        speed: f32
-    ) -> Self {
+    pub fn new(start: u32, end: u32, speed: f32) -> Self {
         Self { start, end, speed }
     }
 }
 
+/// Component used to describe sprite animations.
 #[derive(Component, Clone, Deref)]
-pub struct ActionAnimationMap(
-    pub HashMap<Action, Animation>
-);
+pub struct ActionAnimationMap(pub HashMap<Action, Animation>);
 
+/// Component used to describe tile animations.
 #[derive(Component, Clone, Deref)]
-pub struct TileAnimationMap(
-    pub HashMap<(u32, u32), FixedAnimation> // (layer, tile)
-);
+pub struct TileAnimationMap(pub HashMap<(u32, u32), FixedAnimation>);
 
 impl TileAnimationMap {
     pub fn lookup(&self, position: &(u32, u32)) -> Option<FixedAnimation> {
@@ -48,6 +42,7 @@ impl ActionAnimationMap {
     }
 }
 
+/// Represents a grid of sprites for animation purposes.
 pub struct AnimationSpriteGrid {
     pub size: Vec2,
     pub columns: usize,
@@ -57,17 +52,14 @@ pub struct AnimationSpriteGrid {
 }
 
 impl AnimationSpriteGrid {
-    pub fn to_atlas(
-        &self,
-        texture: Handle<Image>
-    ) -> TextureAtlas {
+    pub fn to_atlas(&self, texture: Handle<Image>) -> TextureAtlas {
         TextureAtlas::from_grid(
             texture,
             self.size,
             self.columns,
             self.rows,
             self.padding,
-            self.offset
+            self.offset,
         )
     }
 }

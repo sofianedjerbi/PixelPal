@@ -2,11 +2,11 @@ use bevy::ecs::system::CommandQueue;
 use bevy::prelude::*;
 use bevy::log;
 use bevy::tasks::AsyncComputeTaskPool;
+use bevy::tasks::Task;
 use bevy::tasks::block_on;
 use bevy_ecs_tilemap::prelude::*;
 use futures_lite::future::poll_once;
 use once_cell::sync::Lazy;
-use rand::Rng;
 
 use crate::bundles::map::*;
 use crate::bundles::map::DataTileBundle;
@@ -19,6 +19,7 @@ use crate::constants::map::*;
 use crate::constants::textures::*;
 use crate::util::noise::TiledNoise;
 use crate::util::position::*;
+use crate::util::tile::*;
 
 
 static NOISE: Lazy<TiledNoise> = Lazy::new(|| {
@@ -31,137 +32,15 @@ static NOISE: Lazy<TiledNoise> = Lazy::new(|| {
     )
 });
 
-
-fn spawn_chunk_base(
-    commands: &mut Commands,
-    thread_pool: &AsyncComputeTaskPool,
-    chunk_pos: IVec2,
-    all_chunks: &mut ResMut<ChunkMap>,
-    player_chunk_map: &mut Mut<'_, ChunkMap>,
-    texture: TilemapTexture
-) {
-    log::debug!("Spawning chunk: {}", chunk_pos);
-
-    let layer_entity_0 = commands.spawn_empty().id();
-    let layer_entity_1 = commands.spawn_empty().id();
-
-    let task = thread_pool.spawn(async move {
-        let mut command_queue = CommandQueue::default();
-
-        command_queue.push(move |world: &mut World| {
-            let mut tile_storage_0 = TileStorage::empty(
-                CHUNK_SIZE.into()
-            );
-            let mut tile_storage_1 = TileStorage::empty(
-                CHUNK_SIZE.into()
-            );
-
-            let base_x = chunk_pos.x as i32 * CHUNK_SIZE.x as i32;
-            let base_y = chunk_pos.y as i32 * CHUNK_SIZE.y as i32;
-
-            for x in 0..CHUNK_SIZE.x {
-                for y in 0..CHUNK_SIZE.y {
-                    let pos_x = base_x + x as i32;
-                    let pos_y = base_y + y as i32;
-                    let tile_pos = TilePos { x, y };
-                    let level = NOISE.get_value(
-                        pos_x,
-                        pos_y
-                    );
-                    let mask = get_mask(
-                        level,
-                        pos_x,
-                        pos_y
-                    );
-                    let is_edge = mask != 0;
-                    let id_0 = if !is_edge {
-                        get_random_tile_id(level)
-                    } else {
-                        get_random_tile_id(level - 1)
-                    };
-
-                    
-
-                    let tile_bundle_0 = DataTileBundle {
-                        tile: TileBundle {
-                            position: tile_pos,
-                            texture_index: TileTextureIndex(id_0),
-                            tilemap_id: TilemapId(layer_entity_0),
-                            ..Default::default()
-                        },
-                        level: ReliefLevel(level)
-                    };
-
-                    let tile_entity_0 = world.spawn(tile_bundle_0).id();
-                    world.entity_mut(layer_entity_0).add_child(tile_entity_0);
-                    tile_storage_0.set(&tile_pos, tile_entity_0);
-
-                    if let Some(animation) = TEXTURE_ANIMATION_MAP.lookup(&(level, id_0)) {
-                        world.entity_mut(tile_entity_0).insert(
-                            AnimatedTile {
-                                start: animation.start,
-                                end: animation.end,
-                                speed: animation.speed
-                            },
-                        );
-                    }
-
-                    if is_edge {
-                        let id_1 = mask_to_id(mask, level);
-                        let tile_bundle_1 = DataTileBundle {
-                            tile: TileBundle {
-                                position: tile_pos,
-                                texture_index: TileTextureIndex(id_1),
-                                tilemap_id: TilemapId(layer_entity_1),
-                                ..Default::default()
-                            },
-                            level: ReliefLevel(level)
-                        };
-                        let tile_entity_1 = world.spawn(tile_bundle_1).id();
-                        world.entity_mut(layer_entity_1).add_child(tile_entity_1);
-                        tile_storage_1.set(&tile_pos, tile_entity_1);
-                    }
-                }
-            }
-
-            let transform_0 = Transform::from_xyz(
-                base_x as f32 * TILE,
-                base_y as f32 * TILE,
-                0.0,
-            );
-
-            let transform_1 = Transform::from_xyz(
-                base_x as f32 * TILE,
-                base_y as f32 * TILE,
-                1.0,
-            );
-
-            let layer0 = Layer::new(
-                0,
-                tile_storage_0,
-                texture.clone(),
-                transform_0
-            );
-
-            let layer1 = Layer::new(
-                1,
-                tile_storage_1,
-                texture.clone(),
-                transform_1
-            );
-
-            world.entity_mut(layer_entity_0).insert(layer0);
-            world.entity_mut(layer_entity_1).insert(layer1);
-        });
-
-        command_queue
-    });
-
-    commands.spawn_empty().insert(ChunkTask(task));
-    all_chunks.insert(chunk_pos, (layer_entity_0, layer_entity_1));
-    player_chunk_map.insert(chunk_pos, (layer_entity_0, layer_entity_1));
-}
-
+/// Handles despawning of chunks that are out of range.
+/// 
+/// This function iterates through chunks and despawns those that are beyond the 
+/// specified despawn range from the player's current position.
+///
+/// # Parameters
+/// - `commands`: Commands for entity manipulation.
+/// - `all_chunks`: Resource containing all chunk data.
+/// - `loader_query`: Query for accessing chunk loader transforms.
 pub fn handle_chunk_despawning(
     mut commands: Commands,
     mut all_chunks: ResMut<ChunkMap>,
@@ -189,20 +68,16 @@ pub fn handle_chunk_despawning(
     }
 }
 
-pub fn fetch_chunk_tasks(
-    mut commands: Commands,
-    mut transform_tasks: Query<(Entity, &mut ChunkTask)>
-) {
-    for (entity, mut task) in &mut transform_tasks {
-        if let Some(mut queue) = block_on(poll_once(&mut task.0)) {
-            commands.add(move |world: &mut World| {
-                queue.apply(world);
-            });
-            commands.entity(entity).despawn();
-        }
-    }
-}
-
+/// Creates tasks for generating new chunks around the players.
+/// 
+/// This function spawns new chunks within the spawn radius around the player.s 
+/// It uses an asynchronous compute pool for chunk generation tasks.
+///
+/// # Parameters
+/// - `commands`: Commands for entity manipulation.
+/// - `all_chunks`: Resource containing all chunk data.
+/// - `texture`: Resource of the main tilemap texture.
+/// - `loader_query`: Query for accessing chunk loader transforms.
 pub fn create_chunk_tasks(
     mut commands: Commands,
     mut all_chunks: ResMut<ChunkMap>,
@@ -237,38 +112,192 @@ pub fn create_chunk_tasks(
     }
 }
 
-fn get_random_tile_id(level: u32) -> u32 {
-    let random_number = rand::thread_rng().gen_range(0..=1000);
-    let tile_probability_map = TEXTURE_RELIEF_IDS_MAP.get(&level).unwrap();
-    let mut keys_less_than_random: Vec<&u32> = tile_probability_map.keys().filter(
-        |&&key| key <= random_number
-    ).collect();
-    keys_less_than_random.sort();
-    let key = keys_less_than_random.last().unwrap();
-    *tile_probability_map.get(key).unwrap() + TEXTURE_ID_OFFSET_MAP[&level]
+/// Fetches and applies completed chunk generation tasks.
+/// 
+/// This function checks for completed asynchronous tasks for chunk generation 
+/// and applies them to the world state.
+///
+/// # Parameters
+/// - `commands`: Commands for entity manipulation.
+/// - `transform_tasks`: Query for accessing chunk task components.
+pub fn fetch_chunk_tasks(
+    mut commands: Commands,
+    mut transform_tasks: Query<(Entity, &mut ChunkTask)>
+) {
+    for (entity, mut task) in &mut transform_tasks {
+        if let Some(mut queue) = block_on(poll_once(&mut task.0)) {
+            commands.add(move |world: &mut World| {
+                queue.apply(world);
+            });
+            commands.entity(entity).despawn();
+        }
+    }
 }
 
-fn get_mask(value: u32,x: i32, y: i32) -> u32 {
-    let got_n = NOISE.get_value(x, y + 1) < value;
-    let got_s = NOISE.get_value(x, y - 1) < value;
-    let got_e = NOISE.get_value(x + 1, y) < value;
-    let got_w = NOISE.get_value(x - 1, y) < value;
-    let got_nw = NOISE.get_value(x - 1, y + 1) < value;
-    let got_ne = NOISE.get_value(x + 1, y + 1) < value;
-    let got_sw = NOISE.get_value(x - 1, y - 1) < value;
-    let got_se = NOISE.get_value(x + 1, y - 1) < value;
+/// Spawns a new chunk and adds it to the world.
+fn spawn_chunk_base(
+    commands: &mut Commands,
+    thread_pool: &AsyncComputeTaskPool,
+    chunk_pos: IVec2,
+    all_chunks: &mut ResMut<ChunkMap>,
+    player_chunk_map: &mut Mut<'_, ChunkMap>,
+    texture: TilemapTexture
+) {
+    log::debug!("Spawning chunk: {}", chunk_pos);
 
-    0b000_0_0_000 
-        + if got_n { 0b010_0_0_000 } else { 0 }
-        + if got_s { 0b000_0_0_010 } else { 0 }
-        + if got_w { 0b000_1_0_000 } else { 0 }
-        + if got_e { 0b000_0_1_000 } else { 0 }
-        + if got_nw { 0b100_0_0_000 } else { 0 }
-        + if got_ne { 0b001_0_0_000 } else { 0 }
-        + if got_sw { 0b000_0_0_100 } else { 0 }
-        + if got_se { 0b000_0_0_001 } else { 0 }
+    let layer_entity_0 = commands.spawn_empty().id();
+    let layer_entity_1 = commands.spawn_empty().id();
+    let task = create_chunk_task(
+        thread_pool,
+        chunk_pos,
+        layer_entity_0,
+        layer_entity_1,
+        texture.clone()
+    );
+
+    commands.spawn_empty().insert(ChunkTask(task));
+    all_chunks.insert(chunk_pos, (layer_entity_0, layer_entity_1));
+    player_chunk_map.insert(chunk_pos, (layer_entity_0, layer_entity_1));
 }
 
-fn mask_to_id(mask: u32, value: u32) -> u32 {
-    TEXTURE_CORNER_IDS_MAP[&mask] + TEXTURE_ID_OFFSET_MAP[&value]
+/// Creates an asynchronous task for generating a chunk.
+fn create_chunk_task(
+    thread_pool: &AsyncComputeTaskPool,
+    chunk_pos: IVec2,
+    layer_entity_0: Entity,
+    layer_entity_1: Entity,
+    texture: TilemapTexture
+) -> Task<CommandQueue> {
+    thread_pool.spawn(async move {
+        let mut command_queue = CommandQueue::default();
+        populate_command_queue(&mut command_queue, chunk_pos, layer_entity_0, layer_entity_1, texture);
+        command_queue
+    })
+}
+
+/// Populates a command queue with tile setup commands for a chunk.
+fn populate_command_queue(
+    command_queue: &mut CommandQueue,
+    chunk_pos: IVec2,
+    layer_entity_0: Entity,
+    layer_entity_1: Entity,
+    texture: TilemapTexture
+) {
+    command_queue.push(move |world: &mut World| {
+        let mut tile_storage_0 = TileStorage::empty(CHUNK_SIZE.into());
+        let mut tile_storage_1 = TileStorage::empty(CHUNK_SIZE.into());
+        let base_x = chunk_pos.x as i32 * CHUNK_SIZE.x as i32;
+        let base_y = chunk_pos.y as i32 * CHUNK_SIZE.y as i32;
+
+        for x in 0..CHUNK_SIZE.x {
+            for y in 0..CHUNK_SIZE.y {
+                setup_tile(
+                    world,
+                    &mut tile_storage_0,
+                    &mut tile_storage_1,
+                    layer_entity_0,
+                    layer_entity_1,
+                    base_x,
+                    base_y,
+                    x,
+                    y,
+                );
+            }
+        }
+
+        add_layer_to_world(world, layer_entity_0, 0, tile_storage_0, texture.clone(), base_x, base_y, 0.0);
+        add_layer_to_world(world, layer_entity_1, 1, tile_storage_1, texture.clone(), base_x, base_y, 1.0);
+    });
+}
+
+/// Sets up individual tiles within a chunk.
+fn setup_tile(
+    world: &mut World,
+    tile_storage_0: &mut TileStorage,
+    tile_storage_1: &mut TileStorage,
+    layer_entity_0: Entity,
+    layer_entity_1: Entity,
+    base_x: i32,
+    base_y: i32,
+    x: u32,
+    y: u32,
+) {
+    let pos_x = base_x + x as i32;
+    let pos_y = base_y + y as i32;
+    let tile_pos = TilePos { x, y };
+    let level = NOISE.get_value(pos_x, pos_y);
+    let mask = NOISE.get_mask(level, pos_x, pos_y);
+    let is_edge = mask != 0;
+    let id_0 = if !is_edge {
+        get_random_tile_id(level)
+    } else {
+        get_random_tile_id(level - 1)
+    };
+
+    let tile_bundle_0 = DataTileBundle {
+        tile: TileBundle {
+            position: tile_pos,
+            texture_index: TileTextureIndex(id_0),
+            tilemap_id: TilemapId(layer_entity_0),
+            ..Default::default()
+        },
+        level: ReliefLevel(level),
+    };
+
+    let tile_entity_0 = world.spawn(tile_bundle_0).id();
+    world.entity_mut(layer_entity_0).add_child(tile_entity_0);
+    tile_storage_0.set(&tile_pos, tile_entity_0);
+
+    if let Some(animation) = TEXTURE_ANIMATION_MAP.lookup(&(level, id_0)) {
+        world.entity_mut(tile_entity_0).insert(
+            AnimatedTile {
+                start: animation.start,
+                end: animation.end,
+                speed: animation.speed,
+            },
+        );
+    }
+
+    if is_edge {
+        let id_1 = mask_to_id(mask, level);
+        let tile_bundle_1 = DataTileBundle {
+            tile: TileBundle {
+                position: tile_pos,
+                texture_index: TileTextureIndex(id_1),
+                tilemap_id: TilemapId(layer_entity_1),
+                ..Default::default()
+            },
+            level: ReliefLevel(level),
+        };
+        let tile_entity_1 = world.spawn(tile_bundle_1).id();
+        world.entity_mut(layer_entity_1).add_child(tile_entity_1);
+        tile_storage_1.set(&tile_pos, tile_entity_1);
+    }
+}
+
+/// Adds a layer containing tiles to the world.
+fn add_layer_to_world(
+    world: &mut World,
+    layer_entity: Entity,
+    layer_index: u32,
+    tile_storage: TileStorage,
+    texture: TilemapTexture,
+    base_x: i32,
+    base_y: i32,
+    z_index: f32
+) {
+    let transform = Transform::from_xyz(
+        base_x as f32 * TILE,
+        base_y as f32 * TILE,
+        z_index,
+    );
+
+    let layer = Layer::new(
+        layer_index,
+        tile_storage,
+        texture,
+        transform
+    );
+
+    world.entity_mut(layer_entity).insert(layer);
 }

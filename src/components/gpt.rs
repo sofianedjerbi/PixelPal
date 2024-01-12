@@ -11,6 +11,7 @@ use crate::constants::bot::*;
 
 use super::action::Action;
 
+/// Represents a conversation with the ChatGPT model.
 #[derive(Clone)]
 struct GPTConversation {
     client: ChatGPT,
@@ -19,6 +20,7 @@ struct GPTConversation {
 }
 
 impl GPTConversation {
+    /// Creates a new `GPTConversation` with the provided ChatGPT client.
     fn new(client: ChatGPT) -> Self {
         Self {
             client,
@@ -27,6 +29,7 @@ impl GPTConversation {
         }
     }
 
+    /// Sends a message to ChatGPT and retrieves the corresponding actions.
     async fn send_message_get_actions(&self, message: &str) -> Option<Vec<Action>> {
         if self.busy.swap(true, Ordering::Acquire) {
             return None;
@@ -50,6 +53,7 @@ impl GPTConversation {
         actions
     }
 
+    /// Retrieves actions with extra context.
     async fn get_actions_with_extra_context(
         &self,
         context: &str
@@ -59,6 +63,7 @@ impl GPTConversation {
         self.send_message_get_actions(&message).await
     }
 
+    /// Adds context to the conversation's history.
     fn add_context(
         &mut self,
         message: String
@@ -68,7 +73,7 @@ impl GPTConversation {
     }
 }
 
-
+/// Component representing a GPT-based agent.
 #[derive(Component)]
 pub struct GPTAgent {
     conversation: GPTConversation,
@@ -76,6 +81,7 @@ pub struct GPTAgent {
 }
 
 impl GPTAgent {
+    /// Creates a new GPTAgent with the provided API key.
     pub fn new(key: &str) -> Option<Self> {
         let config = ModelConfigurationBuilder::default()
         .engine(ChatGPTEngine::Custom(MODEL))
@@ -100,6 +106,7 @@ impl GPTAgent {
         }
     }
 
+    /// Creates actions with extra context from a message.
     pub fn create_actions_with_extra_context(&self, message: &str) {
         let queue_arc = Arc::clone(&self.action_queue);
         let conversation = self.conversation.clone();
@@ -115,6 +122,7 @@ impl GPTAgent {
         }).detach(); // Detach & forget.
     }
 
+    /// Adds context to the conversation.
     pub fn add_context(
         &mut self,
         message: &str
@@ -122,6 +130,7 @@ impl GPTAgent {
         self.conversation.add_context(message.to_string());
     }
     
+    /// Checks if the GPT agent is busy.
     pub fn is_busy(&self) -> bool {
         self.conversation.busy.load(Ordering::Relaxed)
     }

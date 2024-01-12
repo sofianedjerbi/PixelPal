@@ -14,13 +14,13 @@ mod components;
 mod bundles;
 mod util;
 mod constants;
-mod events;
 
 
 
 fn main(){
     dotenv().ok();
 
+    // Setup & Start bevy.
     App::new()
         .add_plugins(
             DefaultPlugins
@@ -31,7 +31,7 @@ fn main(){
             })
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: String::from("TestGame"),
+                    title: String::from("PixelPal"),
                     ..Default::default()
                 }),
                 ..default()

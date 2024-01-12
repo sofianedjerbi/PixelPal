@@ -6,6 +6,16 @@ use crate::components::textures::TilesetOffset;
 use crate::constants::bot::BOT_VIEW_DISTANCE;
 use crate::util::position::*;
 
+
+/// Processes bot behavior based on the environment and user positions.
+///
+/// This function checks the surroundings of each bot and updates its actions
+/// based on the relative position of the user. It leverages the GPTAgent to
+/// create actions for the bot based on the current game context.
+///
+/// # Parameters
+/// - `bot_query`: Query to access bot characters and their properties.
+/// - `user_query`: Query to access user characters and their properties.
 pub fn query_bot(
     bot_query: Query<(&Transform, &TilesetOffset, &GPTAgent), With<IsBot>>,
     user_query: Query<(&Transform, &TilesetOffset), With<IsUser>>

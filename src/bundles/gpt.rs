@@ -5,6 +5,8 @@ use crate::constants::bot::*;
 
 use super::player::PlayerBundle;
 
+
+/// Bundle for creating a GPT agent.
 #[derive(Bundle)]
 pub struct GptBundle {
     player: PlayerBundle,

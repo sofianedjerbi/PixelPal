@@ -1,3 +1,5 @@
+//! Constants used in Bevy ECS
+
 pub mod map;
 pub mod generation;
 pub mod display;

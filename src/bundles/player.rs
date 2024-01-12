@@ -12,7 +12,7 @@ use crate::constants::sprites::*;
 use super::animation::ActionAnimationBundle;
 use super::animation::AnimationBundle;
 
-
+/// Bundle for creating a player entity in the game.
 #[derive(Bundle)]
 pub struct PlayerBundle {
     pub busy: Busy,
@@ -22,14 +22,15 @@ pub struct PlayerBundle {
     pub action_duration: ActionDurationPHF,
     pub chunk_map: ChunkMap,
     pub animation: ActionAnimationBundle,
-    pub offset: TilesetOffset
+    pub offset: TilesetOffset,
 }
 
 impl PlayerBundle {
+    /// Creates a new player entity bundle with the specified parameters.
     pub fn new(
         position: Vec2,
         texture: Handle<Image>,
-        texture_atlas: &mut ResMut<Assets<TextureAtlas>>
+        texture_atlas: &mut ResMut<Assets<TextureAtlas>>,
     ) -> Self {
         Self {
             busy: Busy(false),
@@ -40,7 +41,7 @@ impl PlayerBundle {
             action_duration: PLAYER_ACTION_DURATION_MAP,
             chunk_map: ChunkMap::new(),
             animation: ActionAnimationBundle {
-                    animation_bundle: AnimationBundle::new(
+                animation_bundle: AnimationBundle::new(
                     Vec3::new(
                         position.x,
                         position.y + TILE / 2.,

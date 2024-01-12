@@ -5,6 +5,13 @@ use crate::components::characters::*;
 use crate::constants::action::ACTION_TICK_FREQUENCY;
 
 
+/// Updates the position of characters based on their actions.
+///
+/// This system moves characters each frame based on their current actions
+/// and updates their busy status when actions are completed.
+///
+/// # Parameters
+/// - `query`: Query for accessing and modifying character transforms, busy status, and actions.
 pub fn move_characters(
     mut query: Query<(
         &mut Transform,
@@ -37,6 +44,14 @@ pub fn move_characters(
     }
 }
 
+/// Adjusts the camera's position to follow the player.
+///
+/// This system sets the camera's position to match the player's position,
+/// ensuring that the camera always centers on the player.
+///
+/// # Parameters
+/// - `player_query`: Query to access the player's transform.
+/// - `camera_query`: Query to access and modify the camera's transform.
 pub fn camera_follow_player(
     player_query: Query<&Transform, With<IsUser>>,
     mut camera_query: Query<&mut Transform, (With<Camera>, Without<IsUser>)>,

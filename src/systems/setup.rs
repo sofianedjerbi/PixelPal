@@ -12,6 +12,17 @@ use crate::constants::display::*;
 use crate::constants::sprites::PLAYER_SPRITE;
 use crate::constants::textures::TEXTURE_PATH;
 
+
+/// Sets up the initial game environment.
+/// 
+/// This system initializes the game world by loading textures,
+/// spawning the main camera, and creating player and bot entities.
+/// 
+/// # Parameters
+/// - `commands`: Commands for spawning entities and resources.
+/// - `asset_server`: Resource to load assets.
+/// - `main_texture`: Mutable resource for the main tilemap texture.
+/// - `textures`: Mutable resource for managing texture atlases.
 pub fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,

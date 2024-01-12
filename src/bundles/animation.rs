@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::components::animation::*;
 
 
+/// Bundle for animated entities.
 #[derive(Bundle)]
 pub struct AnimationBundle {
     pub sprite: SpriteSheetBundle,
@@ -29,6 +30,7 @@ impl AnimationBundle {
     }
 }
 
+/// Bundle for animated entities that use actions.
 #[derive(Bundle)]
 pub struct ActionAnimationBundle {
     pub animation_bundle: AnimationBundle,
