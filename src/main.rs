@@ -26,7 +26,7 @@ fn main(){
             DefaultPlugins
             .set(ImagePlugin::default_nearest())
             .set(LogPlugin {
-                filter: "info,wgpu_core=warn,wgpu_hal=warn,test=info".into(),
+                filter: "info,wgpu_core=warn,wgpu_hal=warn,pixel_pal=info".into(),
                 level: bevy::log::Level::DEBUG,
             })
             .set(WindowPlugin {

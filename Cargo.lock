@@ -3215,6 +3215,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "pixel_pal"
+version = "0.1.0"
+dependencies = [
+ "async-global-executor",
+ "benimator",
+ "bevy",
+ "bevy_ecs_tilemap",
+ "bevy_pixel_camera",
+ "chatgpt_rs",
+ "dotenv",
+ "futures-lite 2.2.0",
+ "noise",
+ "once_cell",
+ "pathfinding",
+ "phf",
+ "quick_cache",
+ "rand 0.8.5",
+ "schemars",
+ "serde",
+ "strum",
+ "strum_macros",
+ "tokio",
+]
+
+[[package]]
 name = "pkg-config"
 version = "0.3.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3971,31 +3996,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff1bc3d3f05aff0403e8ac0d92ced918ec05b666a43f83297ccef5bea8a3d449"
 dependencies = [
  "winapi-util",
-]
-
-[[package]]
-name = "test"
-version = "0.1.0"
-dependencies = [
- "async-global-executor",
- "benimator",
- "bevy",
- "bevy_ecs_tilemap",
- "bevy_pixel_camera",
- "chatgpt_rs",
- "dotenv",
- "futures-lite 2.2.0",
- "noise",
- "once_cell",
- "pathfinding",
- "phf",
- "quick_cache",
- "rand 0.8.5",
- "schemars",
- "serde",
- "strum",
- "strum_macros",
- "tokio",
 ]
 
 [[package]]
