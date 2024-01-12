@@ -13,9 +13,9 @@ This project integrates GPT-4 into a video game, where it serves as a dynamic an
 ## Setup & Running
 
 ### Prerequisites
-- [Rust](https://www.rust-lang.org/)
-- [Cargo](https://www.rust-lang.org/)
 - [ChatGPT API Key](https://platform.openai.com/)
+- [Rust](https://www.rust-lang.org/) (building)
+- [Cargo](https://www.rust-lang.org/) (building)
 
 ### Step 1: Clone the Repository
 
