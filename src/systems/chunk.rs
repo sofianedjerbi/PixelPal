@@ -32,6 +32,28 @@ static NOISE: Lazy<TiledNoise> = Lazy::new(|| {
     )
 });
 
+// Compact layer definition
+struct LayerConfig<'a> {
+    layer_index: u32,
+    tile_storage: &'a TileStorage,
+    texture: &'a TilemapTexture,
+    base_x: i32,
+    base_y: i32,
+    z_position: f32,
+}
+
+// Compact tile definition
+struct LayeredTileConfig<'a> {
+    tile_storage_0: &'a mut TileStorage,
+    tile_storage_1: &'a mut TileStorage,
+    layer_entity_0: Entity,
+    layer_entity_1: Entity,
+    base_x: i32,
+    base_y: i32,
+    x: u32,
+    y: u32,
+}
+
 /// Handles despawning of chunks that are out of range.
 /// 
 /// This function iterates through chunks and despawns those that are beyond the 
@@ -186,42 +208,64 @@ fn populate_command_queue(
     command_queue.push(move |world: &mut World| {
         let mut tile_storage_0 = TileStorage::empty(CHUNK_SIZE.into());
         let mut tile_storage_1 = TileStorage::empty(CHUNK_SIZE.into());
-        let base_x = chunk_pos.x as i32 * CHUNK_SIZE.x as i32;
-        let base_y = chunk_pos.y as i32 * CHUNK_SIZE.y as i32;
+        let base_x = chunk_pos.x * CHUNK_SIZE.x as i32;
+        let base_y = chunk_pos.y * CHUNK_SIZE.y as i32;
 
         for x in 0..CHUNK_SIZE.x {
             for y in 0..CHUNK_SIZE.y {
-                setup_tile(
-                    world,
-                    &mut tile_storage_0,
-                    &mut tile_storage_1,
+                let layered_tile_setup_0 = LayeredTileConfig {
+                    tile_storage_0: &mut tile_storage_0,
+                    tile_storage_1: &mut tile_storage_1,
                     layer_entity_0,
                     layer_entity_1,
                     base_x,
                     base_y,
                     x,
                     y,
-                );
+                };
+                
+                setup_tile(world, layered_tile_setup_0);
             }
         }
 
-        add_layer_to_world(world, layer_entity_0, 0, tile_storage_0, texture.clone(), base_x, base_y, 0.0);
-        add_layer_to_world(world, layer_entity_1, 1, tile_storage_1, texture.clone(), base_x, base_y, 1.0);
+        let config_0 = LayerConfig {
+            layer_index: 0,
+            tile_storage: &tile_storage_0,
+            texture: &texture,
+            base_x,
+            base_y,
+            z_position: 0.0,
+        };
+        
+        let config_1 = LayerConfig {
+            layer_index: 1,
+            tile_storage: &tile_storage_1,
+            texture: &texture,
+            base_x,
+            base_y,
+            z_position: 1.0,
+        };
+        
+        add_layer_to_world(world, layer_entity_0, &config_0);
+        add_layer_to_world(world, layer_entity_1, &config_1);
     });
 }
 
 /// Sets up individual tiles within a chunk.
 fn setup_tile(
     world: &mut World,
-    tile_storage_0: &mut TileStorage,
-    tile_storage_1: &mut TileStorage,
-    layer_entity_0: Entity,
-    layer_entity_1: Entity,
-    base_x: i32,
-    base_y: i32,
-    x: u32,
-    y: u32,
+    tile_config: LayeredTileConfig
 ) {
+    let LayeredTileConfig {
+        tile_storage_0,
+        tile_storage_1,
+        layer_entity_0,
+        layer_entity_1,
+        base_x,
+        base_y,
+        x,
+        y,
+    } = tile_config;
     let pos_x = base_x + x as i32;
     let pos_y = base_y + y as i32;
     let tile_pos = TilePos { x, y };
@@ -276,27 +320,18 @@ fn setup_tile(
 }
 
 /// Adds a layer containing tiles to the world.
-fn add_layer_to_world(
-    world: &mut World,
-    layer_entity: Entity,
-    layer_index: u32,
-    tile_storage: TileStorage,
-    texture: TilemapTexture,
-    base_x: i32,
-    base_y: i32,
-    z_index: f32
-) {
+fn add_layer_to_world(world: &mut World, layer_entity: Entity, config: &LayerConfig) {
     let transform = Transform::from_xyz(
-        base_x as f32 * TILE,
-        base_y as f32 * TILE,
-        z_index,
+        config.base_x as f32 * TILE,
+        config.base_y as f32 * TILE,
+        config.z_position,
     );
 
     let layer = Layer::new(
-        layer_index,
-        tile_storage,
-        texture,
-        transform
+        config.layer_index,
+        config.tile_storage.clone(),
+        config.texture.clone(),
+        transform,
     );
 
     world.entity_mut(layer_entity).insert(layer);

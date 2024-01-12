@@ -30,10 +30,10 @@ impl Layer {
             tilemap: TilemapBundle {
                 grid_size: TILE_SIZE.into(),
                 size: CHUNK_SIZE.into(),
-                storage: storage,
-                texture: texture,
+                storage,
+                texture,
                 tile_size: TILE_SIZE,
-                transform: transform,
+                transform,
                 ..Default::default()
             },
         }

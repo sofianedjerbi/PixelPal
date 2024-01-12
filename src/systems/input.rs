@@ -46,7 +46,7 @@ pub fn handle_input(
         transform,
         offset
     ) in query.iter_mut() {
-        if **busy { return }
+        if **busy { return; }
 
         let action_kind = if keyboard_input.pressed(KeyCode::ShiftLeft) 
                                       || keyboard_input.pressed(KeyCode::ShiftRight) {
@@ -167,8 +167,8 @@ fn is_action_possible(
     if !matches!(action.kind, ActionKind::Walk | ActionKind::Run) {
         return true;
     }
-    let position = &player_tile_pos(&transform, offset);
-    let position_relative = relative_tile_pos(&position);
+    let position = &player_tile_pos(transform, offset);
+    let position_relative = relative_tile_pos(position);
 
     let target_pos = *position + action.get_raw_transformation();
     let target_chunk_pos = tile_pos_to_chunk_pos(&target_pos);
@@ -189,5 +189,5 @@ fn is_action_possible(
             return true;
         }
     }
-    return false;
+    false
 }

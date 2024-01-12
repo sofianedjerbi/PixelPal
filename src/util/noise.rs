@@ -96,7 +96,7 @@ impl TiledNoise {
             }
         }
         self.cache.insert((x, y), 0);
-        return 0;
+        0
     }
 
     /// Computes a mask value for a given tile based on its surrounding tiles.
@@ -110,6 +110,7 @@ impl TiledNoise {
     /// The mask value as `u32`.
     /// 
     /// The mask value helps determine the tile's surrounding environment.
+    #[allow(clippy::unusual_byte_groupings)]
     pub fn get_mask(
         &self, 
         value: u32,
@@ -125,14 +126,15 @@ impl TiledNoise {
         let got_sw = self.get_value(x - 1, y - 1) < value;
         let got_se = self.get_value(x + 1, y - 1) < value;
 
-        0b000_0_0_000 
-            + if got_n { 0b010_0_0_000 } else { 0 }
-            + if got_s { 0b000_0_0_010 } else { 0 }
-            + if got_w { 0b000_1_0_000 } else { 0 }
-            + if got_e { 0b000_0_1_000 } else { 0 }
-            + if got_nw { 0b100_0_0_000 } else { 0 }
-            + if got_ne { 0b001_0_0_000 } else { 0 }
-            + if got_sw { 0b000_0_0_100 } else { 0 }
-            + if got_se { 0b000_0_0_001 } else { 0 }
+        (
+            if got_n { 0b010_0_0_000 } else { 0 } +
+            if got_s { 0b000_0_0_010 } else { 0 } +
+            if got_w { 0b000_1_0_000 } else { 0 } +
+            if got_e { 0b000_0_1_000 } else { 0 } +
+            if got_nw { 0b100_0_0_000 } else { 0 } +
+            if got_ne { 0b001_0_0_000 } else { 0 } +
+            if got_sw { 0b000_0_0_100 } else { 0 } +
+            if got_se { 0b000_0_0_001 } else { 0 }
+        )
     }
 }

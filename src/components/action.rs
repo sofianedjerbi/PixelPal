@@ -61,8 +61,8 @@ impl Action {
         let norm = match self.kind {
             ActionKind::Walk => WALK_RATE as i32,
             ActionKind::Run => RUN_RATE as i32,
-            _ => 0 as i32,
-        } as i32;
+            _ => 0_i32,
+        };
 
         match self.direction {
             ActionDirection::Up => IVec2::new(0, norm),
@@ -130,9 +130,8 @@ pub struct ActionDurationPHF(
 
 impl ActionDurationPHF {
     pub fn lookup(&self, action: &Action) -> f32 {
-        self.0.get(&action.kind.to_string())
-              .unwrap() // We're unwrapping hardcoded values.
-              .clone()
+        *self.0.get(&action.kind.to_string())
+               .unwrap() // We're unwrapping hardcoded values.
     }
 
     pub fn generate_timer(&self, action: &Action) -> ActionTimer {

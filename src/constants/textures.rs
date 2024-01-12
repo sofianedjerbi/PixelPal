@@ -104,7 +104,7 @@ pub const TEXTURE_ID_OFFSET_MAP: TextureIDOffsetPHF = TextureIDOffsetPHF(
 
 const WATER_FPS: f32 = 1.;
 
-pub const TEXTURE_ANIMATION_MAP: Lazy<TileAnimationMap> = Lazy::new(|| {
+pub static TEXTURE_ANIMATION_MAP: Lazy<TileAnimationMap> = Lazy::new(|| {
     TileAnimationMap(
         HashMap::from([
             (
@@ -115,6 +115,7 @@ pub const TEXTURE_ANIMATION_MAP: Lazy<TileAnimationMap> = Lazy::new(|| {
     )
 });
 
+#[allow(clippy::unusual_byte_groupings)]
 pub const TEXTURE_CORNER_IDS_MAP: TextureCornerIDsPHF = TextureCornerIDsPHF(
     // 000
     // 0_0 => 000_0_0_000

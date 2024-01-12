@@ -29,7 +29,7 @@ pub fn animate_sprite(
         frames
     ) in query.iter_mut() {
         let animation = frames.lookup(action);
-        state.update(&animation, time.delta());
+        state.update(animation, time.delta());
         sprite.index = state.frame_index();
     }
 }

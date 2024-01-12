@@ -39,8 +39,8 @@ impl GPTConversation {
         let actions = match self.client.send_message(message).await {
             Ok(response) => {
                 let response_txt = &response.message().content;
-                log::debug!("Received:\n{}", &response_txt);
-                Action::from_command_string(&response_txt)
+                log::debug!("Received:\n{}", response_txt);
+                Action::from_command_string(response_txt)
             },
             Err(e) => {
                 log::warn!("Cannot get GPT answer: {}", e);
@@ -101,7 +101,7 @@ impl GPTAgent {
             },
             Err(e) => {
                 log::warn!("Cannot create ChatGPT client: {}", e);
-                return None;
+                None
             }
         }
     }

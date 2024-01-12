@@ -3,16 +3,13 @@ name = "pixel_pal"
 version = "0.1.0"
 edition = "2021"
 
-[toolchain]
-channel = "nightly"
-
 [dependencies]
 serde = "1.0.193"
 schemars = "0.8.16"
 phf = { version = "0.11", features = ["macros"] }
 strum = "0.25.0"
 strum_macros = "0.25.3"
-bevy = { version = "0.12.1", features = ["dynamic_linking"] }
+bevy = { version = "0.12.1" }
 bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap" }
 benimator = { git = "https://github.com/jcornaz/benimator" }
 chatgpt_rs = { version = "1.2.3", features = ["functions"] }
