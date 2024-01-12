@@ -27,13 +27,15 @@ git clone https://github.com/chaoxel/PixelPal.git
 
 ### Step 2: Setup Your API Key
 
-Navigate to the project directory and open the .env file.  
+Navigate to the project directory and open the `.env.example` file.  
 Add your API key as shown below:
 
 ```bash
 # YOUR KEY HERE
 GPT_KEY=sk-..
 ```
+
+After adding the key, rename the file from `.env.example` to `.env`. 
 
 ### Step 3: Compile & Run
 
