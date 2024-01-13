@@ -44,20 +44,16 @@ pub fn setup(
         .insert(IsGameCamera);
 
     // Spawn Player
-    let player_texture = asset_server.load(PLAYER_SPRITE);
+    let player_texture = &asset_server.load(PLAYER_SPRITE);
 
     commands
-        .spawn(PlayerBundle::new(
-            USER_SPAWN,
-            player_texture.clone(),
-            &mut textures,
-        ))
+        .spawn(PlayerBundle::new(USER_SPAWN, player_texture, &mut textures))
         .insert(IsUser);
 
     // Spawn Mittens (GPT)
     let option_key = env::var("GPT_KEY");
     if let Ok(key) = option_key {
-        let option_gpt = GptBundle::new(MITTENS_SPAWN, player_texture.clone(), &mut textures, &key);
+        let option_gpt = GptBundle::new(MITTENS_SPAWN, player_texture, &mut textures, &key);
         if let Some(gpt) = option_gpt {
             commands.spawn(gpt).insert(IsBot);
         }

@@ -21,7 +21,7 @@ pub fn query_bot(
 ) {
     for (transform, offset, agent) in bot_query.iter() {
         let is_empty = {
-            if let Ok(queue) = agent.action_queue.try_lock() {
+            if let Ok(queue) = agent.action_queue.try_read() {
                 queue.is_empty()
             } else {
                 false

@@ -116,7 +116,7 @@ pub fn handle_bot_input(
             return;
         }
 
-        if let Ok(mut queue) = agent.action_queue.try_lock() {
+        if let Ok(mut queue) = agent.action_queue.try_write() {
             if let Some(new_action) = queue.pop_front() {
                 if is_action_possible(
                     &new_action,
@@ -126,7 +126,7 @@ pub fn handle_bot_input(
                     &chunk_query,
                     &tile_query,
                 ) {
-                    *action = new_action.clone();
+                    *action = new_action;
                     *timer = duration.generate_timer(&action);
                     **busy = true;
                     return;

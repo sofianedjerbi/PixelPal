@@ -29,7 +29,7 @@ impl PlayerBundle {
     /// Creates a new player entity bundle with the specified parameters.
     pub fn new(
         position: Vec2,
-        texture: Handle<Image>,
+        texture: &Handle<Image>,
         texture_atlas: &mut ResMut<Assets<TextureAtlas>>,
     ) -> Self {
         Self {
@@ -42,7 +42,7 @@ impl PlayerBundle {
             animation: ActionAnimationBundle {
                 animation_bundle: AnimationBundle::new(
                     Vec3::new(position.x, position.y + TILE / 2., PLAYER_SPRITE_LAYER),
-                    texture_atlas.add(PLAYER_SPRITE_GRID.to_atlas(texture)),
+                    texture_atlas.add(PLAYER_SPRITE_GRID.to_atlas(texture.clone())),
                 ),
                 action_animation_map: PLAYER_SPRITE_INDICES_MAP.clone(),
             },

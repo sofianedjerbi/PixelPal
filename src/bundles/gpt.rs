@@ -15,7 +15,7 @@ pub struct GptBundle {
 impl GptBundle {
     pub fn new(
         position: Vec2,
-        texture: Handle<Image>,
+        texture: &Handle<Image>,
         texture_atlas: &mut ResMut<Assets<TextureAtlas>>,
         key: &str,
     ) -> Option<Self> {

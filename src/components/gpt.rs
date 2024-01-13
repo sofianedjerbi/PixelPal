@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
 use crate::constants::bot::*;
 
@@ -15,7 +15,7 @@ use super::action::Action;
 #[derive(Clone)]
 struct GPTConversation {
     client: ChatGPT,
-    history: Vec<String>,
+    context: Vec<String>,
     busy: Arc<AtomicBool>,
 }
 
@@ -24,7 +24,7 @@ impl GPTConversation {
     fn new(client: ChatGPT) -> Self {
         Self {
             client,
-            history: Vec::new(),
+            context: Vec::new(),
             busy: Arc::new(AtomicBool::new(false)),
         }
     }
@@ -55,7 +55,7 @@ impl GPTConversation {
 
     /// Retrieves actions with extra context.
     async fn get_actions_with_extra_context(&self, context: &str) -> Option<Vec<Action>> {
-        let mut message = self.history.join("\n");
+        let mut message = self.context.join("\n");
         message.push_str(context);
         self.send_message_get_actions(&message).await
     }
@@ -63,15 +63,15 @@ impl GPTConversation {
     /// Adds context to the conversation's history.
     fn add_context(&mut self, message: String) {
         log::debug!("Adding to context:\n\"{}\"", message);
-        self.history.push(message);
+        self.context.push(message);
     }
 }
 
 /// Component representing a GPT-based agent.
 #[derive(Component)]
 pub struct GPTAgent {
-    conversation: GPTConversation,
-    pub action_queue: Arc<Mutex<VecDeque<Action>>>,
+    conversation: Arc<RwLock<GPTConversation>>,
+    pub action_queue: Arc<RwLock<VecDeque<Action>>>,
 }
 
 impl GPTAgent {
@@ -86,8 +86,8 @@ impl GPTAgent {
 
         match result {
             Ok(client) => Some(Self {
-                conversation: GPTConversation::new(client),
-                action_queue: Arc::new(Mutex::new(VecDeque::new())),
+                conversation: Arc::new(RwLock::new(GPTConversation::new(client))),
+                action_queue: Arc::new(RwLock::new(VecDeque::new())),
             }),
             Err(e) => {
                 log::warn!("Cannot create ChatGPT client: {}", e);
@@ -98,17 +98,18 @@ impl GPTAgent {
 
     /// Creates actions with extra context from a message.
     pub fn create_actions_with_extra_context(&self, message: &str) {
-        let queue_arc = Arc::clone(&self.action_queue);
-        let conversation = self.conversation.clone();
-        let message_clone = "\n".to_string() + message;
+        let queue_arc = self.action_queue.clone();
+        let conversation_arc = self.conversation.clone();
+        let message = "\n".to_string() + message;
 
         async_global_executor::spawn(async move {
-            if let Ok(mut queue) = queue_arc.try_lock() {
-                if let Some(actions) = conversation
-                    .get_actions_with_extra_context(&message_clone)
-                    .await
-                {
-                    queue.extend(actions);
+            if let Ok(mut queue) = queue_arc.try_write() {
+                if let Ok(conversation) = conversation_arc.try_read() {
+                    if let Some(actions) =
+                        conversation.get_actions_with_extra_context(&message).await
+                    {
+                        queue.extend(actions);
+                    }
                 }
             }
         })
@@ -117,11 +118,16 @@ impl GPTAgent {
 
     /// Adds context to the conversation.
     pub fn add_context(&mut self, message: &str) {
-        self.conversation.add_context(message.to_string());
+        if let Ok(mut conversation) = self.conversation.try_write() {
+            conversation.add_context(message.to_string());
+        }
     }
 
     /// Checks if the GPT agent is busy.
     pub fn is_busy(&self) -> bool {
-        self.conversation.busy.load(Ordering::Relaxed)
+        if let Ok(conversation) = self.conversation.try_read() {
+            return conversation.busy.load(Ordering::Relaxed);
+        }
+        false
     }
 }
