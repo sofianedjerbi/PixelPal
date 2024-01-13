@@ -169,16 +169,28 @@ fn is_action_possible(
     let target_chunk_pos = tile_pos_to_chunk_pos(&target_pos);
 
     let current_chunk_pos = tile_pos_to_chunk_pos(position);
-    let (layer, _) = chunk_map.get(&current_chunk_pos).unwrap();
-    let tile_storage = chunk_query.get(*layer).unwrap();
-    let tile_entiy = tile_storage.get(&position_relative).unwrap();
-    let level0 = **tile_query.get(tile_entiy).unwrap() as f32;
+    let (layer, _) = chunk_map
+        .get(&current_chunk_pos)
+        .expect("Unable to get level 0 layer!");
+    let tile_storage = chunk_query
+        .get(*layer)
+        .expect("Unable to get level 0 tile storage!");
+    let tile_entiy = tile_storage
+        .get(&position_relative)
+        .expect("Unable to get level 0 tile entity!");
+    let level0 = **tile_query
+        .get(tile_entiy)
+        .expect("Unable to get level 0 value!") as f32;
 
     if let Some((layer, _)) = chunk_map.get(&target_chunk_pos) {
-        let tile_storage = chunk_query.get(*layer).unwrap();
+        let tile_storage = chunk_query
+            .get(*layer)
+            .expect("Unable to get level 1 tile storage!");
         let target_relative = relative_tile_pos(&target_pos);
         if let Some(tile_entiy) = tile_storage.get(&target_relative) {
-            let level1 = **tile_query.get(tile_entiy).unwrap() as f32;
+            let level1 = **tile_query
+                .get(tile_entiy)
+                .expect("Unable to get level 1 value!") as f32;
             return level0 == level1;
         } else {
             return true;

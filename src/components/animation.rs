@@ -37,10 +37,8 @@ impl TileAnimationMap {
 
 impl ActionAnimationMap {
     pub fn lookup(&self, action: &Action) -> &Animation {
-        self.get(action).expect(&format!(
-            "Unable to lookup {:?} in ActionAnimationMap!",
-            action
-        ))
+        self.get(action)
+            .unwrap_or_else(|| panic!("Unable to lookup {:?} in ActionAnimationMap!", action))
     }
 }
 

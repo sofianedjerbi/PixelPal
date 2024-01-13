@@ -127,7 +127,10 @@ pub struct ActionDurationPHF(pub Map<&'static str, f32>);
 
 impl ActionDurationPHF {
     pub fn lookup(&self, action: &Action) -> f32 {
-        *self.0.get(&action.kind.to_string()).unwrap() // We're unwrapping hardcoded values.
+        *self
+            .0
+            .get(&action.kind.to_string())
+            .unwrap_or_else(|| panic!("Unable to lookup {:?} in ActionDurationPHF!", action))
     }
 
     pub fn generate_timer(&self, action: &Action) -> ActionTimer {

@@ -8,16 +8,16 @@ const _TOTAL_SAMPLE: f64 = SAMPLE_NUMBER as f64 * SAMPLE_NUMBER as f64;
 ///
 /// This struct uses Fbm (Fractal Brownian Motion) noise algorithm for generating noise values.
 /// It supports caching for efficient noise value retrieval.
-pub struct TiledNoise {
+pub struct TiledNoise<'a> {
     noise: Fbm<Perlin>,
-    layer_range: Vec<f64>,
+    layer_range: &'a [f64],
     zoom: f64,
     sample_number: usize,
     total_sample: f64,
     cache: Cache<(i32, i32), u32>,
 }
 
-impl TiledNoise {
+impl<'a> TiledNoise<'a> {
     /// Constructs a new `TiledNoise`.
     ///
     /// # Parameters
@@ -31,7 +31,7 @@ impl TiledNoise {
     /// A new instance of `TiledNoise`.
     pub fn new(
         seed: u32,
-        layer_range: Vec<f64>,
+        layer_range: &'a [f64],
         zoom: f64,
         sample_number: usize,
         cache_size: usize,

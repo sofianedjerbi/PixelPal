@@ -14,14 +14,26 @@ use crate::constants::textures::*;
 /// from a predefined map (`TEXTURE_RELIEF_IDS_MAP`) based on the given level.
 pub fn get_random_tile_id(level: u32) -> u32 {
     let random_number = rand::thread_rng().gen_range(0..=1000);
-    let tile_probability_map = TEXTURE_RELIEF_IDS_MAP.get(&level).unwrap();
+    let tile_probability_map = TEXTURE_RELIEF_IDS_MAP
+        .get(&level)
+        .expect("Unable to get tile probability map!");
     let mut keys_less_than_random: Vec<&u32> = tile_probability_map
         .keys()
         .filter(|&&key| key <= random_number)
         .collect();
     keys_less_than_random.sort();
-    let key = keys_less_than_random.last().unwrap();
-    *tile_probability_map.get(key).unwrap() + TEXTURE_ID_OFFSET_MAP[&level]
+    let key = keys_less_than_random.last().unwrap_or_else(|| {
+        panic!(
+            "Unable to get the last key less than random {}!",
+            random_number
+        )
+    });
+    *tile_probability_map.get(key).unwrap_or_else(|| {
+        panic!(
+            "Cannot get the probability map associated with the key {}",
+            key
+        )
+    }) + TEXTURE_ID_OFFSET_MAP[&level]
 }
 
 /// Converts a mask and a value to a specific tile ID.

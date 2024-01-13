@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use bevy::ecs::system::CommandQueue;
 use bevy::log;
 use bevy::prelude::*;
@@ -21,21 +23,14 @@ use crate::util::noise::TiledNoise;
 use crate::util::position::*;
 use crate::util::tile::*;
 
-static NOISE: Lazy<TiledNoise> = Lazy::new(|| {
-    TiledNoise::new(
-        0,
-        LAYER_RANGE.to_vec(),
-        NOISE_ZOOM,
-        SAMPLE_NUMBER,
-        CACHE_SIZE,
-    )
-});
+static NOISE: Lazy<TiledNoise> =
+    Lazy::new(|| TiledNoise::new(0, &LAYER_RANGE, NOISE_ZOOM, SAMPLE_NUMBER, CACHE_SIZE));
 
 // Compact layer definition
 struct LayerConfig<'a> {
     layer_index: u32,
     tile_storage: &'a TileStorage,
-    texture: &'a TilemapTexture,
+    texture: &'a Arc<TilemapTexture>,
     base_x: i32,
     base_y: i32,
     z_position: f32,
@@ -118,7 +113,7 @@ pub fn create_chunk_tasks(
                         chunk_ipos,
                         &mut all_chunks,
                         &mut player_chunk_map,
-                        texture.get(),
+                        texture.clone_arc(),
                     );
                 }
             }
@@ -155,7 +150,7 @@ fn spawn_chunk_base(
     chunk_pos: IVec2,
     all_chunks: &mut ResMut<ChunkMap>,
     player_chunk_map: &mut Mut<'_, ChunkMap>,
-    texture: TilemapTexture,
+    texture: Arc<TilemapTexture>,
 ) {
     log::debug!("Spawning chunk: {}", chunk_pos);
 
@@ -166,7 +161,7 @@ fn spawn_chunk_base(
         chunk_pos,
         layer_entity_0,
         layer_entity_1,
-        texture.clone(),
+        texture,
     );
 
     commands.spawn_empty().insert(ChunkTask(task));
@@ -180,7 +175,7 @@ fn create_chunk_task(
     chunk_pos: IVec2,
     layer_entity_0: Entity,
     layer_entity_1: Entity,
-    texture: TilemapTexture,
+    texture: Arc<TilemapTexture>,
 ) -> Task<CommandQueue> {
     thread_pool.spawn(async move {
         let mut command_queue = CommandQueue::default();
@@ -201,7 +196,7 @@ fn populate_command_queue(
     chunk_pos: IVec2,
     layer_entity_0: Entity,
     layer_entity_1: Entity,
-    texture: TilemapTexture,
+    texture: Arc<TilemapTexture>,
 ) {
     command_queue.push(move |world: &mut World| {
         let mut tile_storage_0 = TileStorage::empty(CHUNK_SIZE.into());
@@ -244,8 +239,8 @@ fn populate_command_queue(
             z_position: 1.0,
         };
 
-        add_layer_to_world(world, layer_entity_0, &config_0);
-        add_layer_to_world(world, layer_entity_1, &config_1);
+        add_layer_to_world(world, layer_entity_0, config_0);
+        add_layer_to_world(world, layer_entity_1, config_1);
     });
 }
 
@@ -313,17 +308,22 @@ fn setup_tile(world: &mut World, tile_config: LayeredTileConfig) {
 }
 
 /// Adds a layer containing tiles to the world.
-fn add_layer_to_world(world: &mut World, layer_entity: Entity, config: &LayerConfig) {
-    let transform = Transform::from_xyz(
-        config.base_x as f32 * TILE,
-        config.base_y as f32 * TILE,
-        config.z_position,
-    );
+fn add_layer_to_world(world: &mut World, layer_entity: Entity, layer_config: LayerConfig) {
+    let LayerConfig {
+        layer_index,
+        tile_storage,
+        texture,
+        base_x,
+        base_y,
+        z_position,
+    } = layer_config;
+
+    let transform = Transform::from_xyz(base_x as f32 * TILE, base_y as f32 * TILE, z_position);
 
     let layer = Layer::new(
-        config.layer_index,
-        config.tile_storage.clone(),
-        config.texture.clone(),
+        layer_index,
+        tile_storage.clone(),
+        texture.clone_weak(),
         transform,
     );
 

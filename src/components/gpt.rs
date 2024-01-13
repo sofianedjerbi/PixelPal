@@ -80,7 +80,7 @@ impl GPTAgent {
         let config = ModelConfigurationBuilder::default()
             .engine(ChatGPTEngine::Custom(MODEL))
             .build()
-            .unwrap(); // We're sure this won't produce any error.
+            .unwrap_or_else(|_| panic!("Unable to create GPT config with engine {}!", MODEL));
 
         let result = ChatGPT::new_with_config(key, config);
 
