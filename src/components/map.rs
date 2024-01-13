@@ -1,4 +1,5 @@
 use std::fmt;
+use std::sync::Arc;
 
 use bevy::ecs::system::CommandQueue;
 use bevy::prelude::*;
@@ -10,7 +11,7 @@ use bevy_ecs_tilemap::map::TilemapTexture;
 #[derive(Resource, Deref, DerefMut)]
 pub struct MainTilemapTexture(
     /// The handle to the tilemap texture.
-    Option<TilemapTexture>,
+    Option<Arc<TilemapTexture>>,
 );
 
 impl MainTilemapTexture {
@@ -25,12 +26,12 @@ impl MainTilemapTexture {
     ///
     /// * `image` - The handle to the image resource.
     pub fn set_handle(&mut self, image: Handle<Image>) {
-        self.0 = Some(TilemapTexture::Single(image));
+        self.0 = Some(Arc::new(TilemapTexture::Single(image)));
     }
 
     /// Retrieves the tilemap texture.
-    pub fn get(&self) -> TilemapTexture {
-        self.0.clone().unwrap()
+    pub fn clone_arc(&self) -> Arc<TilemapTexture> {
+        Arc::clone(self.0.as_ref().expect("Main tilemap texture not set!"))
     }
 }
 

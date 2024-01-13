@@ -30,14 +30,17 @@ pub struct ActionAnimationMap(pub HashMap<Action, Animation>);
 pub struct TileAnimationMap(pub HashMap<(u32, u32), FixedAnimation>);
 
 impl TileAnimationMap {
-    pub fn lookup(&self, position: &(u32, u32)) -> Option<FixedAnimation> {
-        self.get(position).cloned()
+    pub fn lookup(&self, position: &(u32, u32)) -> Option<&FixedAnimation> {
+        self.get(position)
     }
 }
 
 impl ActionAnimationMap {
     pub fn lookup(&self, action: &Action) -> &Animation {
-        self.get(action).unwrap()
+        self.get(action).expect(&format!(
+            "Unable to lookup {:?} in ActionAnimationMap!",
+            action
+        ))
     }
 }
 
