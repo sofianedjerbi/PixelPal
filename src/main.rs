@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use bevy_ecs_tilemap::prelude::*;
 use bevy_pixel_camera::PixelCameraPlugin;
-use components::map::{ChunkMap, MainTilemapTexture};
+use components::map::{ChunkMap, ChunkSpawningChannel, MainTilemapTexture};
 use constants::action::ACTION_TICK_FREQUENCY;
 use constants::map::RENDER_CHUNK_SIZE;
 use dotenv::dotenv;
@@ -44,6 +44,7 @@ fn main() {
         })
         .insert_resource(MainTilemapTexture::default())
         .insert_resource(ChunkMap::new())
+        .insert_resource(ChunkSpawningChannel::new())
         .add_plugins(TilemapPlugin)
         .add_systems(Startup, systems::setup::setup)
         .add_systems(Update, systems::input::handle_input)

@@ -3,11 +3,8 @@ use std::sync::Arc;
 use bevy::ecs::system::CommandQueue;
 use bevy::log;
 use bevy::prelude::*;
-use bevy::tasks::block_on;
 use bevy::tasks::AsyncComputeTaskPool;
-use bevy::tasks::Task;
 use bevy_ecs_tilemap::prelude::*;
-use futures_lite::future::poll_once;
 use once_cell::sync::Lazy;
 
 use crate::bundles::map::DataTileBundle;
@@ -93,6 +90,7 @@ pub fn handle_chunk_despawning(
 pub fn create_chunk_tasks(
     mut commands: Commands,
     mut all_chunks: ResMut<ChunkMap>,
+    channel: Res<ChunkSpawningChannel>,
     texture: Res<MainTilemapTexture>,
     mut loader_query: Query<(&Transform, &mut ChunkMap)>,
 ) {
@@ -110,6 +108,7 @@ pub fn create_chunk_tasks(
                     spawn_chunk_base(
                         &mut commands,
                         thread_pool,
+                        &channel,
                         chunk_ipos,
                         &mut all_chunks,
                         &mut player_chunk_map,
@@ -129,17 +128,11 @@ pub fn create_chunk_tasks(
 /// # Parameters
 /// - `commands`: Commands for entity manipulation.
 /// - `transform_tasks`: Query for accessing chunk task components.
-pub fn fetch_chunk_tasks(
-    mut commands: Commands,
-    mut transform_tasks: Query<(Entity, &mut ChunkTask)>,
-) {
-    for (entity, mut task) in &mut transform_tasks {
-        if let Some(mut queue) = block_on(poll_once(&mut task.0)) {
-            commands.add(move |world: &mut World| {
-                queue.apply(world);
-            });
-            commands.entity(entity).despawn();
-        }
+pub fn fetch_chunk_tasks(mut commands: Commands, mut channel: ResMut<ChunkSpawningChannel>) {
+    while let Ok(mut queue) = channel.receiver.try_recv() {
+        commands.add(move |world: &mut World| {
+            queue.apply(world);
+        });
     }
 }
 
@@ -147,6 +140,7 @@ pub fn fetch_chunk_tasks(
 fn spawn_chunk_base(
     commands: &mut Commands,
     thread_pool: &AsyncComputeTaskPool,
+    channel: &Res<ChunkSpawningChannel>,
     chunk_pos: IVec2,
     all_chunks: &mut ResMut<ChunkMap>,
     player_chunk_map: &mut Mut<'_, ChunkMap>,
@@ -156,15 +150,16 @@ fn spawn_chunk_base(
 
     let layer_entity_0 = commands.spawn_empty().id();
     let layer_entity_1 = commands.spawn_empty().id();
-    let task = create_chunk_task(
+
+    create_chunk_task(
         thread_pool,
+        channel,
         chunk_pos,
         layer_entity_0,
         layer_entity_1,
         texture,
     );
 
-    commands.spawn_empty().insert(ChunkTask(task));
     all_chunks.insert(chunk_pos, (layer_entity_0, layer_entity_1));
     player_chunk_map.insert(chunk_pos, (layer_entity_0, layer_entity_1));
 }
@@ -172,22 +167,34 @@ fn spawn_chunk_base(
 /// Creates an asynchronous task for generating a chunk.
 fn create_chunk_task(
     thread_pool: &AsyncComputeTaskPool,
+    channel: &Res<ChunkSpawningChannel>,
     chunk_pos: IVec2,
     layer_entity_0: Entity,
     layer_entity_1: Entity,
     texture: Arc<TilemapTexture>,
-) -> Task<CommandQueue> {
-    thread_pool.spawn(async move {
-        let mut command_queue = CommandQueue::default();
-        populate_command_queue(
-            &mut command_queue,
-            chunk_pos,
-            layer_entity_0,
-            layer_entity_1,
-            texture,
-        );
-        command_queue
-    })
+) {
+    let sender = channel.sender.clone();
+    thread_pool
+        .spawn(async move {
+            let mut command_queue = CommandQueue::default();
+            populate_command_queue(
+                &mut command_queue,
+                chunk_pos,
+                layer_entity_0,
+                layer_entity_1,
+                texture,
+            );
+            match sender.send(command_queue).await {
+                Ok(_) => log::debug!("Chunk {} {} successfully sent.", chunk_pos.x, chunk_pos.y),
+                Err(e) => log::error!(
+                    "Failed to send chunk {} {}: {:?}",
+                    chunk_pos.x,
+                    chunk_pos.y,
+                    e
+                ),
+            }
+        })
+        .detach();
 }
 
 /// Populates a command queue with tile setup commands for a chunk.

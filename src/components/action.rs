@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use phf::Map;
-use schemars::JsonSchema;
 use serde::Deserialize;
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
@@ -9,9 +8,7 @@ use crate::constants::action::*;
 use crate::constants::map::TILE;
 
 /// Represents the direction of an action (e.g., Up, Down, Left, Right).
-#[derive(
-    Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString,
-)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, Deserialize, EnumString)]
 pub enum ActionDirection {
     #[strum(ascii_case_insensitive)]
     Up,
@@ -24,9 +21,7 @@ pub enum ActionDirection {
 }
 
 /// Represents the kind of an action (e.g., Stand, Walk, Run).
-#[derive(
-    Component, Debug, Clone, PartialEq, Eq, Hash, Display, JsonSchema, Deserialize, EnumString,
-)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Display, Deserialize, EnumString)]
 pub enum ActionKind {
     #[strum(ascii_case_insensitive)]
     Stand,
@@ -38,7 +33,7 @@ pub enum ActionKind {
 }
 
 /// Represents an action with a kind and direction.
-#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, JsonSchema, Deserialize)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
 pub struct Action {
     pub kind: ActionKind,
     pub direction: ActionDirection,

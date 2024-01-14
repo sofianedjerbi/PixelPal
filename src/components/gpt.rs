@@ -1,6 +1,7 @@
+use async_compat::Compat;
 use bevy::log;
 use bevy::prelude::*;
-use chatgpt::prelude::*;
+use bevy::tasks::AsyncComputeTaskPool;
 use std::collections::VecDeque;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
@@ -8,6 +9,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::constants::bot::*;
+use crate::util::gpt::*;
 
 use super::action::Action;
 
@@ -17,6 +19,13 @@ struct GPTConversation {
     client: ChatGPT,
     context: Vec<String>,
     busy: Arc<AtomicBool>,
+}
+
+/// Component representing a GPT-based agent.
+#[derive(Component)]
+pub struct GPTAgent {
+    conversation: Arc<RwLock<GPTConversation>>,
+    pub action_queue: Arc<RwLock<VecDeque<Action>>>,
 }
 
 impl GPTConversation {
@@ -67,22 +76,15 @@ impl GPTConversation {
     }
 }
 
-/// Component representing a GPT-based agent.
-#[derive(Component)]
-pub struct GPTAgent {
-    conversation: Arc<RwLock<GPTConversation>>,
-    pub action_queue: Arc<RwLock<VecDeque<Action>>>,
-}
-
 impl GPTAgent {
     /// Creates a new GPTAgent with the provided API key.
     pub fn new(key: &str) -> Option<Self> {
-        let config = ModelConfigurationBuilder::default()
-            .engine(ChatGPTEngine::Custom(MODEL))
-            .build()
-            .unwrap_or_else(|_| panic!("Unable to create GPT config with engine {}!", MODEL));
+        let config = ModelConfiguration {
+            engine: MODEL.to_string(),
+            ..Default::default()
+        };
 
-        let result = ChatGPT::new_with_config(key, config);
+        let result = ChatGPT::new(key, config);
 
         match result {
             Ok(client) => Some(Self {
@@ -101,19 +103,21 @@ impl GPTAgent {
         let queue_arc = self.action_queue.clone();
         let conversation_arc = self.conversation.clone();
         let message = "\n".to_string() + message;
+        let thread_pool = AsyncComputeTaskPool::get();
 
-        async_global_executor::spawn(async move {
-            if let Ok(mut queue) = queue_arc.try_write() {
-                if let Ok(conversation) = conversation_arc.try_read() {
-                    if let Some(actions) =
-                        conversation.get_actions_with_extra_context(&message).await
-                    {
-                        queue.extend(actions);
+        thread_pool
+            .spawn(Compat::new(async move {
+                if let Ok(mut queue) = queue_arc.try_write() {
+                    if let Ok(conversation) = conversation_arc.try_read() {
+                        if let Some(actions) =
+                            conversation.get_actions_with_extra_context(&message).await
+                        {
+                            queue.extend(actions);
+                        }
                     }
                 }
-            }
-        })
-        .detach(); // Detach & forget.
+            }))
+            .detach(); // Detach & forget.
     }
 
     /// Adds context to the conversation.

@@ -19,16 +19,13 @@ impl GptBundle {
         texture_atlas: &mut ResMut<Assets<TextureAtlas>>,
         key: &str,
     ) -> Option<Self> {
-        match GPTAgent::new(key) {
-            None => None,
-            Some(mut agent) => {
-                agent.add_context(CONTEXT);
-                agent.add_context(COMMANDS);
-                Some(GptBundle {
-                    player: PlayerBundle::new(position, texture, texture_atlas),
-                    agent,
-                })
+        GPTAgent::new(key).map(|mut agent| {
+            agent.add_context(CONTEXT);
+            agent.add_context(COMMANDS);
+            GptBundle {
+                player: PlayerBundle::new(position, texture, texture_atlas),
+                agent,
             }
-        }
+        })
     }
 }

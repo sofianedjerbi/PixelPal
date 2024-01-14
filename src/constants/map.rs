@@ -13,3 +13,4 @@ pub const RENDER_CHUNK_SIZE: UVec2 = UVec2 {
     x: CHUNK_SIZE.x * 2,
     y: CHUNK_SIZE.y * 2,
 };
+pub const CHUNK_SPAWNING_CHANNEL_BUFFER_SIZE: usize = 1024;
