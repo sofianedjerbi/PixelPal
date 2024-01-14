@@ -1,7 +1,17 @@
 [package]
 name = "pixel_pal"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+
+[profile.dev]
+opt-level = 's'
+
+[profile.dev.package."*"]
+opt-level = 3
 
 [dependencies]
 bevy = { version = "0.12.1" }
@@ -30,5 +40,3 @@ reqwest = { version = "0.11.23", features = ["json"] }
 dotenv = "0.15.0"
 async-compat = "0.2.3"
 
-[profile.release]
-opt-level = 'z'

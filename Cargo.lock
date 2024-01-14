@@ -3037,7 +3037,7 @@ dependencies = [
 
 [[package]]
 name = "pixel_pal"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "async-compat",
  "benimator",

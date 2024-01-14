@@ -80,7 +80,7 @@ impl GPTAgent {
     /// Creates a new GPTAgent with the provided API key.
     pub fn new(key: &str) -> Option<Self> {
         let config = ModelConfiguration {
-            engine: MODEL.to_string(),
+            engine: MODEL.into(),
             ..Default::default()
         };
 

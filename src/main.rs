@@ -30,6 +30,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: String::from("PixelPal"),
+                        canvas: Some("#pixelpal-game".into()),
                         ..Default::default()
                     }),
                     ..default()

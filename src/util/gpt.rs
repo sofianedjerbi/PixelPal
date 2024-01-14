@@ -115,7 +115,7 @@ impl Default for ModelConfiguration {
             presence_penalty: 0.0,
             frequency_penalty: 0.0,
             reply_count: 1,
-            api_url: "https://api.openai.com/v1/chat/completions".to_string(),
+            api_url: "https://api.openai.com/v1/chat/completions".into(),
             timeout: Duration::from_secs(10),
         }
     }

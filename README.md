@@ -49,3 +49,4 @@ cargo run --release
 
 ## License
 Licensed under AGPL (Affero General Public License).
+Assets are reserved under All Rights Reserved by [Cup Nooble](https://twitter.com/Cup_Nooble_)

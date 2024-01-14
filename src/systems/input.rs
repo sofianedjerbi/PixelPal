@@ -34,6 +34,30 @@ type BotCharacterQuery<'a> = (
     &'a GPTAgent,
 );
 
+/// ScanCodes for non-WASM architectures
+#[cfg(not(target_arch = "wasm32"))]
+const KEY_UP: [ScanCode; 1] = [ScanCode(17)];
+#[cfg(not(target_arch = "wasm32"))]
+const KEY_LEFT: [ScanCode; 1] = [ScanCode(30)];
+#[cfg(not(target_arch = "wasm32"))]
+const KEY_DOWN: [ScanCode; 1] = [ScanCode(31)];
+#[cfg(not(target_arch = "wasm32"))]
+const KEY_RIGHT: [ScanCode; 1] = [ScanCode(32)];
+#[cfg(not(target_arch = "wasm32"))]
+const KEY_RUN: [ScanCode; 2] = [ScanCode(42), ScanCode(54)];
+
+/// ScanCodes for WASM architecture
+#[cfg(target_arch = "wasm32")]
+const KEY_UP: [ScanCode; 1] = [ScanCode(90)];
+#[cfg(target_arch = "wasm32")]
+const KEY_LEFT: [ScanCode; 1] = [ScanCode(81)];
+#[cfg(target_arch = "wasm32")]
+const KEY_DOWN: [ScanCode; 1] = [ScanCode(83)];
+#[cfg(target_arch = "wasm32")]
+const KEY_RIGHT: [ScanCode; 1] = [ScanCode(68)];
+#[cfg(target_arch = "wasm32")]
+const KEY_RUN: [ScanCode; 1] = [ScanCode(16)];
+
 /// Handles keyboard input for player characters.
 ///
 /// # Parameters
@@ -46,7 +70,7 @@ type BotCharacterQuery<'a> = (
 /// This function processes the keyboard inputs and updates the actions of the player character accordingly.
 pub fn handle_input(
     mut query: Query<PlayerCharacterQuery, With<IsUser>>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<Input<ScanCode>>,
     chunk_map: Res<ChunkMap>,
     chunk_query: Query<&TileStorage>,
     tile_query: Query<&ReliefLevel>,
@@ -56,21 +80,19 @@ pub fn handle_input(
             return;
         }
 
-        let action_kind = if keyboard_input.pressed(KeyCode::ShiftLeft)
-            || keyboard_input.pressed(KeyCode::ShiftRight)
-        {
+        let action_kind = if keyboard_input.any_pressed(KEY_RUN) {
             ActionKind::Run
         } else {
             ActionKind::Walk
         };
 
-        let new_action_option = if keyboard_input.pressed(KeyCode::S) {
+        let new_action_option = if keyboard_input.any_pressed(KEY_DOWN) {
             Some(Action::new(action_kind, ActionDirection::Down))
-        } else if keyboard_input.pressed(KeyCode::Z) {
+        } else if keyboard_input.any_pressed(KEY_UP) {
             Some(Action::new(action_kind, ActionDirection::Up))
-        } else if keyboard_input.pressed(KeyCode::Q) {
+        } else if keyboard_input.any_pressed(KEY_LEFT) {
             Some(Action::new(action_kind, ActionDirection::Left))
-        } else if keyboard_input.pressed(KeyCode::D) {
+        } else if keyboard_input.any_pressed(KEY_RIGHT) {
             Some(Action::new(action_kind, ActionDirection::Right))
         } else {
             None

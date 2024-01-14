@@ -2,3 +2,5 @@
 .env
 .vscode
 .zst
+wasm/assets
+wasm/bevy_*

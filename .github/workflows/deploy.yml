@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  binary: pixel_pal
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-unknown-unknown
+
+    - name: Install wasm-bindgen-cli
+      run: |
+        cargo install wasm-bindgen-cli
+
+    - name: Build
+      run: |
+        cargo build --release --target wasm32-unknown-unknown
+
+    - name: Prepare package
+      run: |
+        wasm-bindgen --no-typescript --out-name bevy_game --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
+        cp -r assets wasm/
+
+    - name: Optimize Wasm
+      uses: NiklasEi/wasm-opt-action@v2
+      with:
+        file: wasm/bevy_game_bg.wasm
+        output: wasm/bevy_game_bg.wasm
+        options: "--strip-debug -Oz"
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./wasm
