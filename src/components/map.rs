@@ -31,7 +31,10 @@ impl MainTilemapTexture {
 
     /// Retrieves the tilemap texture.
     pub fn clone_arc(&self) -> Arc<TilemapTexture> {
-        Arc::clone(self.0.as_ref().expect("Main tilemap texture not set!"))
+        self.0
+            .as_ref()
+            .expect("Main tilemap texture not set!")
+            .clone()
     }
 }
 
