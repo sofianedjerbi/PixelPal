@@ -9,6 +9,7 @@ use crate::constants::characters::*;
 use crate::constants::display::*;
 use crate::constants::sprites::PLAYER_SPRITE;
 use crate::constants::textures::TEXTURE_PATH;
+use bevy::log;
 use bevy::prelude::*;
 use bevy_pixel_camera::*;
 
@@ -51,11 +52,29 @@ pub fn setup(
         .insert(IsUser);
 
     // Spawn Mittens (GPT)
-    let option_key = env::var("GPT_KEY");
+    let option_key = env::var("PAL_KEY");
+    let model = env::var("PAL_MODEL").unwrap_or_else(|_| {
+        log::info!("No model provided, using gpt-3.5-turbo-1106");
+        "gpt-3.5-turbo-1106".into()
+    });
+    let url = env::var("PAL_URL").unwrap_or_else(|_| {
+        log::info!("No API URK provided, using https://api.openai.com/v1/chat/completions");
+        "https://api.openai.com/v1/chat/completions".into()
+    });
+
     if let Ok(key) = option_key {
-        let option_gpt = GptBundle::new(MITTENS_SPAWN, player_texture, &mut textures, &key);
+        let option_gpt = GptBundle::new(
+            MITTENS_SPAWN,
+            player_texture,
+            &mut textures,
+            key,
+            model,
+            url,
+        );
         if let Some(gpt) = option_gpt {
             commands.spawn(gpt).insert(IsBot);
         }
+    } else {
+        log::info!("No API key provided! PAL will not be spawned.")
     }
 }

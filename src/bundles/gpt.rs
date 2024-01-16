@@ -17,9 +17,11 @@ impl GptBundle {
         position: Vec2,
         texture: &Handle<Image>,
         texture_atlas: &mut ResMut<Assets<TextureAtlas>>,
-        key: &str,
+        key: String,
+        model: String,
+        url: String,
     ) -> Option<Self> {
-        GPTAgent::new(key).map(|mut agent| {
+        GPTAgent::new(key, model, url).map(|mut agent| {
             agent.add_context(CONTEXT);
             agent.add_context(COMMANDS);
             GptBundle {

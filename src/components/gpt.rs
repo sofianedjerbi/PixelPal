@@ -8,7 +8,6 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use crate::constants::bot::*;
 use crate::util::gpt::*;
 
 use super::action::Action;
@@ -78,9 +77,10 @@ impl GPTConversation {
 
 impl GPTAgent {
     /// Creates a new GPTAgent with the provided API key.
-    pub fn new(key: &str) -> Option<Self> {
+    pub fn new(key: String, model: String, url: String) -> Option<Self> {
         let config = ModelConfiguration {
-            engine: MODEL.into(),
+            engine: model,
+            api_url: url,
             ..Default::default()
         };
 
