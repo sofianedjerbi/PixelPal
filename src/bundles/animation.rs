@@ -1,16 +1,17 @@
 use bevy::prelude::*;
 
-use crate::components::animation::*;
+use crate::components::{animation::*, textures::TilesetOffset};
 
 /// Bundle for animated entities.
 #[derive(Bundle)]
 pub struct AnimationBundle {
-    pub sprite: SpriteSheetBundle,
-    pub animation_state: AnimationState,
+    sprite: SpriteSheetBundle,
+    animation_state: AnimationState,
+    offset: TilesetOffset,
 }
 
 impl AnimationBundle {
-    pub fn new(position: Vec3, texture_atlas: Handle<TextureAtlas>) -> Self {
+    pub fn new(position: Vec3, texture_atlas: Handle<TextureAtlas>, offset: TilesetOffset) -> Self {
         Self {
             sprite: SpriteSheetBundle {
                 transform: Transform::from_xyz(position.x, position.y, position.z),
@@ -18,6 +19,7 @@ impl AnimationBundle {
                 ..Default::default()
             },
             animation_state: AnimationState::default(),
+            offset,
         }
     }
 }

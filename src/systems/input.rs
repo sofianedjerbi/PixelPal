@@ -1,3 +1,5 @@
+use std::sync::atomic::Ordering;
+
 use bevy::input::Input;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::TileStorage;
@@ -58,8 +60,8 @@ pub fn handle_input(
     chunk_query: Query<&TileStorage>,
     tile_query: Query<&ReliefLevel>,
 ) {
-    for (mut busy, mut action, mut timer, duration, transform, offset) in query.iter_mut() {
-        if **busy {
+    for (busy, mut action, mut timer, duration, transform, offset) in query.iter_mut() {
+        if busy.load(Ordering::Acquire) {
             return;
         }
 
@@ -94,7 +96,7 @@ pub fn handle_input(
             {
                 *action = new_action;
                 *timer = duration.generate_timer(&action);
-                **busy = true;
+                busy.store(true, Ordering::Release);
             }
             _ => action.kind = PLAYER_ACTION_DEFAULT.kind,
         }
@@ -116,8 +118,8 @@ pub fn handle_bot_input(
     chunk_query: Query<&TileStorage>,
     tile_query: Query<&ReliefLevel>,
 ) {
-    for (mut busy, mut action, mut timer, duration, transform, offset, agent) in query.iter_mut() {
-        if **busy {
+    for (busy, mut action, mut timer, duration, transform, offset, agent) in query.iter_mut() {
+        if busy.load(Ordering::Acquire) {
             return;
         }
 
@@ -133,7 +135,7 @@ pub fn handle_bot_input(
                 ) {
                     *action = new_action;
                     *timer = duration.generate_timer(&action);
-                    **busy = true;
+                    busy.store(true, Ordering::Release);
                     return;
                 }
             }

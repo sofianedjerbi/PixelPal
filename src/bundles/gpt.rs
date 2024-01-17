@@ -3,12 +3,12 @@ use bevy::prelude::*;
 use crate::components::gpt::GPTAgent;
 use crate::constants::bot::*;
 
-use super::player::PlayerBundle;
+use super::mob::PlayerMobBundle;
 
 /// Bundle for creating a GPT agent.
 #[derive(Bundle)]
 pub struct GptBundle {
-    player: PlayerBundle,
+    player_mob: PlayerMobBundle,
     agent: GPTAgent,
 }
 
@@ -25,7 +25,7 @@ impl GptBundle {
             agent.add_context(CONTEXT);
             agent.add_context(COMMANDS);
             GptBundle {
-                player: PlayerBundle::new(position, texture, texture_atlas),
+                player_mob: PlayerMobBundle::new(position, texture, texture_atlas),
                 agent,
             }
         })

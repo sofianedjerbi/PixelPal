@@ -1,7 +1,12 @@
 //! All utils unrelated to Bevy ECS paradigm.
 
-pub mod animation; // Provides functionality for animating game entities.
-pub mod gpt; // Interact with GPT API
-pub mod noise; // Handles noise generation for terrain or other procedural generation needs.
-pub mod position; // Deals with position-related utilities, like conversions between different coordinate systems.
-pub mod tile; // Contains utilities and structures related to tile management and manipulation. // Simple GPT API
+// Provides functionality for animating game entities.
+pub mod animation;
+// Interact with GPT API
+pub mod gpt;
+// Handles noise generation for terrain or other procedural generation needs.
+pub mod noise;
+// Deals with position-related utilities, like conversions between different coordinate systems.
+pub mod position;
+// Contains utilities and structures related to tile management and manipulation.
+pub mod tile;

@@ -1,3 +1,5 @@
+use std::sync::atomic::Ordering;
+
 use bevy::prelude::*;
 
 use crate::components::action::*;
@@ -12,15 +14,15 @@ use crate::constants::action::ACTION_TICK_FREQUENCY;
 /// # Parameters
 /// - `query`: Query for accessing and modifying character transforms, busy status, and actions.
 pub fn move_characters(mut query: Query<(&mut Transform, &mut Busy, &Action, &mut ActionTimer)>) {
-    for (mut transform, mut busy, action, mut timer) in query.iter_mut() {
-        if !**busy {
+    for (mut transform, busy, action, mut timer) in query.iter_mut() {
+        if !busy.load(Ordering::Acquire) {
             continue;
         }
 
         timer.tick(ACTION_TICK_FREQUENCY);
 
         if timer.finished() {
-            **busy = false;
+            busy.store(false, Ordering::Release);
             transform.translation = transform.translation.round();
             return;
         }

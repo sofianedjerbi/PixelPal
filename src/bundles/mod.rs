@@ -1,6 +1,14 @@
 //! Bevy ECS bundles
 
+// Animation bundle (abstract)
 pub mod animation;
-pub mod gpt; // Bot entities.
-pub mod map; // Map & chunk, tile entities
-pub mod player; // Player entities // Animation bundle (abstract)
+// Action bundle (abstract)
+pub mod action;
+// Bot entities.
+pub mod gpt;
+// Map & chunk, tile entities
+pub mod map;
+// Living mob
+pub mod mob;
+// Player entities
+pub mod player;
