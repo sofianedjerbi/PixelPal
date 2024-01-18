@@ -1,12 +1,12 @@
 use bevy::prelude::*;
+use once_cell::sync::Lazy;
 use phf::Map;
 
-/// Component representing a Probability Map of Texture IDs.
-#[derive(Component, Deref)]
-pub struct TextureIDProbabilityPHF(
-    /// A Map of Texture IDs to their respective probabilities.
-    pub Map<u32, u32>,
-);
+use crate::util::distribution::AnyDistribution;
+
+/// Component representing a probability distribution of Texture IDs.
+#[derive(Deref)]
+pub struct TextureDistribution(pub Lazy<AnyDistribution<u32>>);
 
 /// Component representing an Offset Map of Texture IDs.
 #[derive(Component, Deref)]
@@ -19,7 +19,7 @@ pub struct TextureIDOffsetPHF(
 #[derive(Component, Deref)]
 pub struct TextureReliefIDsPHF(
     /// A Map of Texture IDs to their corresponding probability maps.
-    pub Map<u32, &'static TextureIDProbabilityPHF>,
+    pub Map<u32, &'static TextureDistribution>,
 );
 
 /// Component representing a Map of Texture Corner IDs.

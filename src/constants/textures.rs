@@ -1,70 +1,76 @@
 use crate::components::animation::*;
 use crate::components::textures::*;
+use crate::singleton_distribution;
+use crate::util::distribution::AnyDistribution;
+use crate::weighted_distribution;
 use bevy::utils::HashMap;
 use once_cell::sync::Lazy;
 use phf::phf_map;
 
 pub const TEXTURE_PATH: &str = "tileset/environment/full.png";
 
-pub const WATER_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(phf_map! {
-    0u32 => 0,
-});
+pub static WATER_DISTRIBUTION: TextureDistribution =
+    TextureDistribution(singleton_distribution![0]);
 
-pub const GRASS_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(phf_map! {
-    0u32 => 55,   // At least 15 units
-    15u32 => 56,  // At least 15 units
-    30u32 => 57,  // At least 15 units
-    45u32 => 58,  // Adjusted proportionally
-    50u32 => 59,  // Adjusted proportionally
-    55u32 => 60,  // Adjusted proportionally
-    60u32 => 66,  // At least 15 units
-    75u32 => 67,  // At least 15 units
-    90u32 => 68,  // At least 15 units
-    95u32 => 69,  // Adjusted proportionally
-    97u32 => 70,  // Adjusted proportionally
-    99u32 => 71,  // Adjusted proportionally
-    100u32 => 12, // 90%
-});
+pub static GRASS_DISTRIBUTION: TextureDistribution = TextureDistribution(weighted_distribution![
+    u32,
+    (55, 20),
+    (56, 50),
+    (57, 50),
+    (58, 1),
+    (59, 1),
+    (60, 1),
+    (66, 20),
+    (67, 40),
+    (68, 40),
+    (69, 2),
+    (70, 2),
+    (71, 1),
+    (12, 500)
+]);
 
-pub const DARKER_GRASS_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(phf_map! {
-    0u32 => 55,   // At least 15 units
-    15u32 => 56,  // At least 15 units
-    30u32 => 57,  // At least 15 units
-    45u32 => 58,  // Adjusted proportionally
-    50u32 => 59,  // Adjusted proportionally
-    55u32 => 60,  // Adjusted proportionally
-    60u32 => 66,  // At least 15 units
-    75u32 => 67,  // At least 15 units
-    90u32 => 68,  // At least 15 units
-    95u32 => 69,  // Adjusted proportionally
-    97u32 => 70,  // Adjusted proportionally
-    99u32 => 71,  // Adjusted proportionally
-    100u32 => 12, // 90%
-});
+pub static DARKER_GRASS_DISTRIBUTION: TextureDistribution =
+    TextureDistribution(weighted_distribution![
+        u32,
+        (55, 20),
+        (56, 50),
+        (57, 50),
+        (58, 1),
+        (59, 1),
+        (60, 1),
+        (66, 20),
+        (67, 40),
+        (68, 40),
+        (69, 2),
+        (70, 2),
+        (71, 1),
+        (12, 500)
+    ]);
 
-pub const SOIL_MAP: TextureIDProbabilityPHF = TextureIDProbabilityPHF(phf_map! {
-    0u32 => 55,   // 14.89 (rounded to 15)
-    15u32 => 56,  // 14.89 (rounded to 15)
-    30u32 => 57,  // 14.89 (rounded to 15)
-    45u32 => 58,  // 2.96 (rounded to 3)
-    48u32 => 59,  // 4.46 (rounded to 4)
-    52u32 => 66,  // 14.89 (rounded to 15)
-    67u32 => 67,  // 14.89 (rounded to 15)
-    82u32 => 68,  // 14.89 (rounded to 15)
-    97u32 => 69,  // 2.96 (rounded to 3)
-    100u32 => 70, // 4.46 (rounded to 4)
-    104u32 => 12, // 90% of 1000 (keys 100 to 1000)
-});
+pub static SOIL_DISTRIBUTION: TextureDistribution = TextureDistribution(weighted_distribution![
+    u32,
+    (55, 20),
+    (56, 50),
+    (57, 50),
+    (58, 1),
+    (59, 1),
+    (66, 20),
+    (67, 40),
+    (68, 40),
+    (69, 2),
+    (70, 2),
+    (12, 500)
+]);
 
-pub const TEXTURE_RELIEF_IDS_MAP: TextureReliefIDsPHF = TextureReliefIDsPHF(phf_map! {
-    0u32 => &WATER_MAP,
-    1u32 => &SOIL_MAP,
-    2u32 => &GRASS_MAP,
-    3u32 => &GRASS_MAP,
-    4u32 => &GRASS_MAP,
-    5u32 => &DARKER_GRASS_MAP,
-    6u32 => &DARKER_GRASS_MAP,
-    7u32 => &DARKER_GRASS_MAP,
+pub static TEXTURE_RELIEF_IDS_MAP: TextureReliefIDsPHF = TextureReliefIDsPHF(phf_map! {
+    0u32 => &WATER_DISTRIBUTION,
+    1u32 => &SOIL_DISTRIBUTION,
+    2u32 => &GRASS_DISTRIBUTION,
+    3u32 => &GRASS_DISTRIBUTION,
+    4u32 => &GRASS_DISTRIBUTION,
+    5u32 => &DARKER_GRASS_DISTRIBUTION,
+    6u32 => &DARKER_GRASS_DISTRIBUTION,
+    7u32 => &DARKER_GRASS_DISTRIBUTION,
 });
 
 const WATER: u32 = 0;
@@ -91,6 +97,7 @@ pub const TEXTURE_ID_OFFSET_MAP: TextureIDOffsetPHF = TextureIDOffsetPHF(phf_map
 
 const WATER_FPS: f32 = 1.;
 
+// All texture animations
 pub static TEXTURE_ANIMATION_MAP: Lazy<TileAnimationMap> = Lazy::new(|| {
     TileAnimationMap(HashMap::from([(
         (0, 0),

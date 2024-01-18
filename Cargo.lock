@@ -3037,7 +3037,7 @@ dependencies = [
 
 [[package]]
 name = "pixel_pal"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "async-compat",
  "benimator",
@@ -3049,6 +3049,7 @@ dependencies = [
  "once_cell",
  "pathfinding",
  "phf",
+ "phf_shared",
  "quick_cache",
  "rand 0.8.5",
  "reqwest",

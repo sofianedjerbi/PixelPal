@@ -39,4 +39,5 @@ reqwest = { version = "0.11.23", features = ["json"] }
 
 dotenv = "0.15.0"
 async-compat = "0.2.3"
+phf_shared = "0.11.2"
 
