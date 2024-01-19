@@ -23,6 +23,7 @@
         }
 
         #pixelpal-game {
+            display: none;
             background-color: #282c34;
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -75,7 +76,7 @@
 
 <body>
     <div id="screen">
-        <!--<div class="loader"></div>-->
+        <div class="loader"></div>
         <canvas id="pixelpal-game"></canvas>
         <div id="controls">
             <span class="control-key">WASD</span> Move<br>
@@ -86,7 +87,13 @@
         import './restart-audio-context.js'
         import init from './bevy_game.js'
 
-        init().catch((error) => {
+        document.querySelector('.loader').style.display = 'none';
+        document.querySelector('#pixelpal-game').style.display = 'block';
+
+        init().then(() => {
+            document.querySelector('.loader').style.display = 'none';
+            document.querySelector('#pixelpal-game').style.display = 'block';
+        }).catch((error) => {
             if (!error.message.startsWith("Using exceptions for control flow, don't mind me. This isn't actually an error!")) {
                 throw error;
             }
