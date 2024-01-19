@@ -10,7 +10,7 @@
 </div>
 
 ## Description
-This project, currently in progress, integrates GPT-4 into a game, where it serves as a dynamic and helpful in-game companion.  
+This project, currently in progress, integrates ChatGPT into a game, where it serves as a dynamic and helpful in-game companion.  
 Powered by Rust and Bevy, it's a modern and exciting adventure waiting to unfold.
 
 ## Setup & Running
@@ -55,6 +55,7 @@ cargo run --release
 ### Assets
 - [@cup_nooble_](https://twitter.com/Cup_Nooble_)
 - [@tapeanimation](https://www.fiverr.com/tapeanimation)
+- [@lunatel](https://www.fiverr.com/lunatel)
 
 ## License
 Licensed under AGPL (Affero General Public License).  
