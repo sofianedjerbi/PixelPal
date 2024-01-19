@@ -47,6 +47,15 @@ You can now compile and run the project.
 cargo run --release
 ```
 
+## Credits
+
+### Contributors
+- [@chaoxel](https://github.com/chaoxel)
+
+### Assets
+- [@cup_nooble_](https://twitter.com/Cup_Nooble_)
+- [@tapeanimation](https://www.fiverr.com/tapeanimation)
+
 ## License
-Licensed under AGPL (Affero General Public License).
-Assets are reserved under All Rights Reserved by [Cup Nooble](https://twitter.com/Cup_Nooble_)
+Licensed under AGPL (Affero General Public License).  
+All assets and resources are copyrighted and reserved by their respective creators.
