@@ -44,7 +44,7 @@ impl GPTConversation {
         }
 
         log::debug!("Sending:\n{}", message);
-        let actions = match self.client.send_message(message).await {
+        let actions = match self.client.send_message(message, Role::System).await {
             Ok(response) => {
                 let response_txt = &response.message().content;
                 log::debug!("Received:\n{}", response_txt);

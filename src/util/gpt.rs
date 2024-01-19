@@ -143,6 +143,7 @@ impl ChatGPT {
     pub async fn send_message<S: Into<String>>(
         &self,
         message: S,
+        role: Role,
     ) -> Result<CompletionResponse, Error> {
         let response = self
             .client
@@ -150,7 +151,7 @@ impl ChatGPT {
             .json(&CompletionRequest {
                 model: self.config.engine.as_ref(),
                 messages: &vec![ChatMessage {
-                    role: Role::User,
+                    role,
                     content: message.into(),
                 }],
                 stream: false,
