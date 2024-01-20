@@ -4,96 +4,75 @@
 <head>
     <title>PixelPal</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <style>
-        body {
-            background-color: #282c34;
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            width: 100%;
-        }
-
-        #pixelpal-game {
-            display: none;
-            background-color: #282c34;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            aspect-ratio: 16 / 9;
-            width: 100%;
-        }
-
-        #controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 5px;
-            border-radius: 3px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            font-family: 'Arial', sans-serif;
-            font-size: 0.9em;
-        }
-
-        .control-key {
-            display: inline-block;
-            margin: 2px;
-            padding: 3px 5px;
-            background-color: #444;
-            color: #fff;
-            border-radius: 3px;
-            text-align: center;
-        }
-
-        .control-key:not(:last-child) {
-            margin-right: 8px;
-        }
-
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 2s linear infinite;
-            position: absolute;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div id="screen">
-        <div class="loader"></div>
-        <canvas id="pixelpal-game"></canvas>
-        <div id="controls">
-            <span class="control-key">WASD</span> Move<br>
-            <span class="control-key">Shift</span> Run
+    <div class="progress-status" data-progress-status>
+        <div class="progress-track">
+            <div class="progress-bar" data-progress-bar></div>
+            <div class="progress-text" data-progress-text>0%</div>
         </div>
     </div>
+    <!-- The WASM code will resize the canvas dynamically -->
+    <canvas id="pixelpal-game" width="1280" height="720"></canvas>
+    <div id="controls">
+        <span class="control-key">WASD</span>
+        <span>Move</span>
+        <span class="control-key">Shift</span>
+        <span>Run</span>
+    </div>
     <script type="module">
+        import { progressiveFetch } from '/tools.js';
         import './restart-audio-context.js'
         import init from './bevy_game.js'
 
-        document.querySelector('.loader').style.display = 'none';
-        document.querySelector('#pixelpal-game').style.display = 'block';
+        const canvasEl = document.getElementById('pixelpal-game');
 
-        init().then(() => {
-            document.querySelector('.loader').style.display = 'none';
-            document.querySelector('#pixelpal-game').style.display = 'block';
-        }).catch((error) => {
+        let once = false;
+        const observer_callback = (_mutations, _observer) => {
+            if (!once) {
+                // Lock the canvas aspect ratio to prevent the fit_canvas_to_parent setting from creating a feedback loop causing the canvas to grow on resize
+                canvasEl.style.aspectRatio = canvasEl.attributes.width.value / canvasEl.attributes.height.value;
+                once = true;
+            }
+        };
+
+        const observer = new MutationObserver(observer_callback);
+
+        const config = { attributeFilter: ['width', 'height'] };
+
+        observer.observe(canvasEl, config);
+
+        const progressStatusEl = document.querySelector('[data-progress-status]');
+        const progressTextEl = document.querySelector('[data-progress-text]');
+        const progressBarEl = document.querySelector('[data-progress-bar]');
+        let hideProgressTimeoutId;
+
+        async function loadingBarFetch(resource) {
+            return progressiveFetch(resource, {
+                start: ({ filename }) => {
+                    progressStatusEl.style.display = 'block';
+
+                    if (hideProgressTimeoutId) {
+                        clearTimeout(hideProgressTimeoutId);
+                    }
+                },
+                update: ({ isIndeterminate, loadedPercent }) => {
+                    progressBarEl.classList.toggle('progress-bar--indeterminate', isIndeterminate);
+                    progressBarEl.style.width = loadedPercent + '%';
+                    progressTextEl.textContent = Math.round(loadedPercent) + '%'
+                },
+                finish: () => {
+                    hideProgressTimeoutId = setTimeout(() => {
+                        progressStatusEl.style.display = 'none';
+                    }, 50);
+                }
+            })
+        }
+        window.bevyLoadingBarFetch = loadingBarFetch;
+
+        init().catch((error) => {
             if (!error.message.startsWith("Using exceptions for control flow, don't mind me. This isn't actually an error!")) {
                 throw error;
             }
