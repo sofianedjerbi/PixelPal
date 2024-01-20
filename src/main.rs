@@ -1,3 +1,4 @@
+use bevy::asset::AssetMetaCheck;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
@@ -20,6 +21,7 @@ fn main() {
 
     // Setup & Start bevy.
     App::new()
+        .insert_resource(AssetMetaCheck::Never)
         .add_plugins(
             DefaultPlugins
                 .set(ImagePlugin::default_nearest())
