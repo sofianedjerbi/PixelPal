@@ -30,7 +30,7 @@ body {
     border-radius: 3px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     font-family: 'unifont', sans-serif;
-    font-size: 0.9em;
+    font-size: 1em;
     display: grid;
     grid-template-columns: auto auto;
     gap: 2px;
@@ -97,7 +97,7 @@ body {
 }
 
 .progress-bar--indeterminate {
-    background-image: linear-gradient(131deg, #ddd5de 25%, #c89dd1 25%, #a77bb3 50%, #90668c 50%, #7b568c 75%, #694a87 75%, #583f83 100%);
+    background-color: #a77bb3 50%;
     background-size: 26.50px 30.49px;
     animation-duration: 1s;
     animation-fill-mode: forwards;
