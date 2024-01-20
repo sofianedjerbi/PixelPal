@@ -30,7 +30,7 @@ body {
     border-radius: 3px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     font-family: 'unifont', sans-serif;
-    font-size: 0.7em;
+    font-size: 0.9em;
     display: grid;
     grid-template-columns: auto auto;
     gap: 2px;
