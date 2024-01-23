@@ -56,7 +56,7 @@ const KEY_TALK: [KeyCode; 1] = [KeyCode::T];
 /// - `chunk_query`: Query for accessing tile storage data.
 /// - `tile_query`: Query for accessing relief level of tiles.
 /// - `asset_server`: For getting textures
-/// - `texture_atlas`: Registering / spawning textures 
+/// - `texture_atlas`: Registering / spawning textures
 ///
 /// This function processes the keyboard inputs and updates the actions of the player character accordingly.
 #[allow(clippy::too_many_arguments)]
