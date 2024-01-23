@@ -12,3 +12,5 @@ pub mod map;
 pub mod mob;
 // Player entities
 pub mod player;
+// Effect
+pub mod effect;

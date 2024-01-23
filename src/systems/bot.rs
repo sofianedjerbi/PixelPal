@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::components::characters::*;
+use crate::components::character::*;
 use crate::components::gpt::GPTAgent;
-use crate::components::textures::TilesetOffset;
+use crate::components::texture::TilesetOffset;
 use crate::constants::bot::BOT_VIEW_DISTANCE;
 use crate::util::position::*;
 

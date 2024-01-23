@@ -1,5 +1,5 @@
 use crate::components::animation::*;
-use crate::components::textures::*;
+use crate::components::texture::*;
 use crate::singleton_distribution;
 use crate::util::distribution::AnyDistribution;
 use crate::weighted_distribution;
@@ -101,7 +101,7 @@ const WATER_FPS: f32 = 1.;
 pub static TEXTURE_ANIMATION_MAP: Lazy<TileAnimationMap> = Lazy::new(|| {
     TileAnimationMap(HashMap::from([(
         (0, 0),
-        FixedAnimation::new(0, 4, WATER_FPS),
+        TileAnimation::new(0, 4, WATER_FPS),
     )]))
 });
 

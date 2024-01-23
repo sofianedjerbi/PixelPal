@@ -15,7 +15,7 @@ use crate::constants::generation::LAYER_RANGE;
 use crate::constants::generation::NOISE_ZOOM;
 use crate::constants::generation::SAMPLE_NUMBER;
 use crate::constants::map::*;
-use crate::constants::textures::*;
+use crate::constants::tileset::*;
 use crate::util::noise::TiledNoise;
 use crate::util::position::*;
 use crate::util::tile::*;

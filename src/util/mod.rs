@@ -12,3 +12,5 @@ pub mod position;
 pub mod tile;
 // Utilities for mapping continuous intervals to discrete spaces
 pub mod distribution;
+// Effect utils (spawn effects..)
+pub mod effect;

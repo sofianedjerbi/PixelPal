@@ -13,4 +13,5 @@ pub const PLAYER_ACTION_DURATION_MAP: ActionDurationPHF = ActionDurationPHF(phf_
     "Stand" => 0.0,
     "Walk" => 0.3,
     "Run" => 0.2,
+    "Type" => 0.0,
 });

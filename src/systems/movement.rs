@@ -3,7 +3,7 @@ use std::sync::atomic::Ordering;
 use bevy::prelude::*;
 
 use crate::components::action::*;
-use crate::components::characters::*;
+use crate::components::character::*;
 use crate::constants::action::ACTION_TICK_FREQUENCY;
 
 /// Updates the position of characters based on their actions.
@@ -19,6 +19,14 @@ pub fn move_characters(mut query: Query<(&mut Transform, &mut Busy, &Action, &mu
             continue;
         }
 
+        let transformation = action.get_transformation();
+
+        // Don't move if the animation is not a moving animation
+        // Shouldn't impact performances, but can be replaced by a component in the action bundle
+        if transformation == Vec3::new(0., 0., 0.) {
+            continue;
+        }
+
         timer.tick(ACTION_TICK_FREQUENCY);
 
         if timer.finished() {
@@ -27,7 +35,7 @@ pub fn move_characters(mut query: Query<(&mut Transform, &mut Busy, &Action, &mu
             return;
         }
 
-        let movement = action.get_transformation()
+        let movement = transformation
             * Vec3::splat(ACTION_TICK_FREQUENCY.as_secs_f32() / timer.duration().as_secs_f32());
 
         transform.translation += movement;

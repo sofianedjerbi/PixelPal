@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::TilePos;
 
-use crate::{components::textures::TilesetOffset, constants::map::*};
+use crate::{components::texture::TilesetOffset, constants::map::*};
 
 /// Converts a pixel position to chunk position.
 ///

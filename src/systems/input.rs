@@ -5,12 +5,14 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::TileStorage;
 
 use crate::components::action::*;
-use crate::components::characters::*;
+use crate::components::character::*;
 use crate::components::gpt::GPTAgent;
 use crate::components::map::ChunkMap;
 use crate::components::map::ReliefLevel;
-use crate::components::textures::TilesetOffset;
+use crate::components::texture::TilesetOffset;
 use crate::constants::action::PLAYER_ACTION_DEFAULT;
+use crate::constants::sprites::*;
+use crate::util::effect::spawn_effect;
 use crate::util::position::player_tile_pos;
 use crate::util::position::relative_tile_pos;
 use crate::util::position::tile_pos_to_chunk_pos;
@@ -42,30 +44,40 @@ const KEY_LEFT: [KeyCode; 2] = [KeyCode::Left, KeyCode::A];
 const KEY_DOWN: [KeyCode; 2] = [KeyCode::Down, KeyCode::S];
 const KEY_RIGHT: [KeyCode; 2] = [KeyCode::Right, KeyCode::D];
 const KEY_RUN: [KeyCode; 2] = [KeyCode::ShiftLeft, KeyCode::ShiftRight];
+const KEY_TALK: [KeyCode; 1] = [KeyCode::T];
 
 /// Handles keyboard input for player characters.
 ///
 /// # Parameters
+/// - `commands`: For spawning entities
 /// - `keyboard_input`: The current state of the keyboard.
 /// - `query`: Query for accessing and modifying the components related to user actions.
 /// - `chunk_map`: Resource providing the game's chunk map.
 /// - `chunk_query`: Query for accessing tile storage data.
 /// - `tile_query`: Query for accessing relief level of tiles.
+/// - `asset_server`: For getting textures
+/// - `texture_atlas`: Registering / spawning textures 
 ///
 /// This function processes the keyboard inputs and updates the actions of the player character accordingly.
+#[allow(clippy::too_many_arguments)]
 pub fn handle_input(
+    mut commands: Commands,
     mut query: Query<PlayerCharacterQuery, With<IsUser>>,
     keyboard_input: Res<Input<KeyCode>>,
     chunk_map: Res<ChunkMap>,
     chunk_query: Query<&TileStorage>,
     tile_query: Query<&ReliefLevel>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas: ResMut<Assets<TextureAtlas>>,
 ) {
     for (busy, mut action, mut timer, duration, transform, offset) in query.iter_mut() {
         if busy.load(Ordering::Acquire) {
             return;
         }
 
-        let action_kind = if keyboard_input.any_pressed(KEY_RUN) {
+        let action_kind = if keyboard_input.any_pressed(KEY_TALK) {
+            ActionKind::Type
+        } else if keyboard_input.any_pressed(KEY_RUN) {
             ActionKind::Run
         } else {
             ActionKind::Walk
@@ -79,6 +91,16 @@ pub fn handle_input(
             Some(Action::new(action_kind, ActionDirection::Left))
         } else if keyboard_input.any_pressed(KEY_RIGHT) {
             Some(Action::new(action_kind, ActionDirection::Right))
+        } else if keyboard_input.any_pressed(KEY_TALK) {
+            spawn_effect(
+                &mut commands,
+                &TYPE_EFFECT_SPRITE_GRID,
+                TYPE_EFFECT.clone(),
+                transform.translation + BUBBLE_RELATIVE_POSITION,
+                &asset_server.load(TYPE_EFFECT_SPRITE),
+                &mut texture_atlas,
+            );
+            Some(Action::new(action_kind, ActionDirection::Down))
         } else {
             None
         };

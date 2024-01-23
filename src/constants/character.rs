@@ -1,4 +1,4 @@
-use crate::components::characters::*;
+use crate::components::character::*;
 use bevy::prelude::*;
 
 use super::map::TILE;

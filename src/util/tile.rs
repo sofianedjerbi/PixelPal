@@ -1,4 +1,4 @@
-use crate::constants::textures::*;
+use crate::constants::tileset::*;
 
 /// Generates a random tile ID based on the given level.
 ///

@@ -1,5 +1,4 @@
 use bevy::asset::AssetMetaCheck;
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
@@ -38,9 +37,7 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(PixelCameraPlugin)
-        .add_plugins(LogDiagnosticsPlugin::default())
         .insert_resource(TilemapRenderSettings {
             render_chunk_size: RENDER_CHUNK_SIZE,
             ..Default::default()
@@ -55,7 +52,8 @@ fn main() {
         .add_systems(Update, systems::chunk::create_chunk_tasks)
         .add_systems(Update, systems::chunk::fetch_chunk_tasks)
         .add_systems(Update, systems::chunk::handle_chunk_despawning)
-        .add_systems(Update, systems::animation::animate_sprite)
+        .add_systems(Update, systems::animation::animate_action_sprite)
+        .add_systems(Update, systems::animation::animate_defined_sprite)
         .add_systems(Update, systems::bot::query_bot)
         .add_systems(
             Update,

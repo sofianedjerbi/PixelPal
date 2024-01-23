@@ -6,7 +6,7 @@ pub mod animation;
 pub mod bot;
 // Deals with chunk loading and despawning.
 pub mod chunk;
-// Handles user input and interactions.
+// Handles user & bot input and interactions.
 pub mod input;
 // Implements character and camera movement.
 pub mod movement;

@@ -5,8 +5,28 @@ use crate::components::action::*;
 use crate::components::animation::*;
 use crate::util::animation::new_animation;
 
+use super::map::TILE;
+
+// EFFECTS
+pub const BUBBLE_FPS: f64 = 8.;
+
+pub const BUBBLE_RELATIVE_POSITION: Vec3 = Vec3::new(0., TILE, 10.);
+
+pub const TYPE_EFFECT_SPRITE: &str = "effect/bubble.png";
+
+pub static TYPE_EFFECT: Lazy<DefinedAnimation> =
+    Lazy::new(|| DefinedAnimation(new_animation(0..=19, BUBBLE_FPS).repeat_from(13)));
+
+pub const TYPE_EFFECT_SPRITE_GRID: AnimationSpriteGrid = AnimationSpriteGrid {
+    size: Vec2::new(28., 22.),
+    columns: 4,
+    rows: 5,
+    padding: None,
+    offset: None,
+};
+
 // PLAYER
-pub const PLAYER_SPRITE: &str = "characters/player.png";
+pub const PLAYER_SPRITE: &str = "character/player.png";
 pub const PLAYER_SPRITE_LAYER: f32 = 4.;
 
 pub const PLAYER_SPRITE_GRID: AnimationSpriteGrid = AnimationSpriteGrid {
@@ -73,6 +93,11 @@ pub static PLAYER_SPRITE_INDICES_MAP: Lazy<ActionAnimationMap> = Lazy::new(|| {
         (
             Action::new(ActionKind::Run, ActionDirection::Left),
             new_animation(88..96, PLAYER_RUN_FPS),
+        ),
+        // Type Actions
+        (
+            Action::new(ActionKind::Type, ActionDirection::Down),
+            new_animation(0..8, PLAYER_STAND_FPS),
         ),
     ]))
 });

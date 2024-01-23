@@ -56,6 +56,7 @@ cargo run --release
 - [@cup_nooble_](https://twitter.com/Cup_Nooble_)
 - [@tapeanimation](https://www.fiverr.com/tapeanimation)
 - [@lunatel](https://www.fiverr.com/lunatel)
+- [@chaoxel](https://github.com/chaoxel)
 
 ## License
 Licensed under AGPL (Affero General Public License).  

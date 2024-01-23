@@ -12,7 +12,7 @@ use crate::components::animation::*;
 /// # Parameters
 /// - `time`: Resource containing time information.
 /// - `query`: Query for accessing and modifying animation states, sprites, actions, and frame maps.
-pub fn animate_sprite(
+pub fn animate_action_sprite(
     time: Res<Time>,
     mut query: Query<(
         &mut AnimationState,
@@ -23,6 +23,20 @@ pub fn animate_sprite(
 ) {
     for (mut state, mut sprite, action, frames) in query.iter_mut() {
         let animation = frames.lookup(action);
+        state.update(animation, time.delta());
+        sprite.index = state.frame_index();
+    }
+}
+
+pub fn animate_defined_sprite(
+    time: Res<Time>,
+    mut query: Query<(
+        &mut AnimationState,
+        &mut TextureAtlasSprite,
+        &DefinedAnimation,
+    )>,
+) {
+    for (mut state, mut sprite, animation) in query.iter_mut() {
         state.update(animation, time.delta());
         sprite.index = state.frame_index();
     }

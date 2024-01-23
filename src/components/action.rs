@@ -29,6 +29,8 @@ pub enum ActionKind {
     Walk,
     #[strum(ascii_case_insensitive)]
     Run,
+    #[strum(ascii_case_insensitive)]
+    Type,
     // Add future actions here
 }
 
